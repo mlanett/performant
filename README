@@ -15,11 +15,11 @@ Utilization: divide the busy time by the length of the interval.
 
 Redis Keys:
 
-Jobs:Kind:Running <SortedSet<Start,ID>>
-Jobs:Kind:Running Count     <integer>
-Jobs:Kind:Busy Time         <float>
-Jobs:Kind:Working Busy Time <float>
-Jobs:Kind:Last Tick         <float>
+Performant:Kind:Running     < SortedSet < ID sorted by Start time > >
+Performant:Kind:Operations  < integer >
+Performant:Kind:Busy Time   < float >
+Performant:Kind:Work Time   < float >
+Performant:Kind:Last Tick   < float >
 
 Intervals for rollups:
   1 second for at least the past 1 minute (60...120 records)
