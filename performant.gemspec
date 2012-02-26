@@ -14,4 +14,6 @@ Gem::Specification.new do |gem|
   gem.name          = "performant"
   gem.require_paths = ["lib"]
   gem.version       = Performant::VERSION
+
+  gem.add_dependency "redis"
 end
