@@ -5,5 +5,6 @@ require "performant/version"
 module Performant
   autoload :Configuration,  "performant/configuration"
   autoload :Monitor,        "performant/monitor"
+  autoload :Retriever,      "performant/retriever"
   autoload :Storage,        "performant/storage"
 end # Performant
