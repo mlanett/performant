@@ -9,14 +9,14 @@ class Monitor
 
   # creates a job id and records it starting
   # returns the job id
-  def start( now = Time.now )
-    id = make_job_id( now )
-    record( :start, now )
+  def start( time = Time.now )
+    id = make_job_id( time )
+    record( :start, time )
     return id
   end
 
-  def finish( job_id, now = Time.now )
-    record( :finish, now )
+  def finish( job_id, time = Time.now )
+    record( :finish, time )
   end
 
   def run( &block )
@@ -32,11 +32,11 @@ class Monitor
   # event processing
   #
 
-  def record( start_or_finish, now = Time.now )
+  def record( start_or_finish, time = Time.now )
     timeout = Time.now + 10
 
     begin
-      storage.record( start_or_finish, now )
+      storage.record( start_or_finish, time )
       return true
 
     rescue Storage::BusyTryAgain => x
