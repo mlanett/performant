@@ -1,0 +1,33 @@
+Records four fundamental performance metrics:
+
+The observation interval under observation.
+The number of operations in the interval.
+The total time during which operations resided in the system — the “busy time.”
+The total execution time of all operations — the “weighted time.”
+
+What is this good for? We can use these together with Little’s Law to derive these additional four long-term average metrics:
+
+Throughput: divide the number of queries in the observation interval by the length of the interval.
+Execution time: divide the weighted time by the number of queries in the interval.
+Concurrency: divide the weighted time by the length of the interval.
+Utilization: divide the busy time by the length of the interval.
+
+
+Redis Keys:
+
+Jobs:Kind:Running <SortedSet<Start,ID>>
+Jobs:Kind:Running Count     <integer>
+Jobs:Kind:Busy Time         <float>
+Jobs:Kind:Working Busy Time <float>
+Jobs:Kind:Last Tick         <float>
+
+Intervals for rollups:
+  1 second for at least the past 1 minute (60...120 records)
+  1 minute for at least the past hour (60..120 records)
+  hourly for at least the past 3 days (72...144 records)
+  daily for the past 90 days (90...180 records)
+  
+
+See also:
+http://www.mysqlperformanceblog.com/2011/04/27/the-four-fundamental-performance-metrics/
+http://www.mysqlperformanceblog.com/2011/05/05/the-two-even-more-fundamental-performance-metrics/
