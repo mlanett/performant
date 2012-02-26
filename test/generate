@@ -1,0 +1,80 @@
+#!/usr/bin/env ruby
+
+def bits(x)
+  Math.log(x) / Math.log(2)
+end
+
+require "bundler/setup"
+require "performant"
+
+# generate 3+e days of data
+# for each day, generate data on a bell curve
+
+DAY = 86400
+NUM = 10000
+LEN = 5
+
+def normal
+  ( rand + rand + rand + rand + rand + rand + rand + rand ) / 8.0
+end
+
+def make( day )
+  inday  = normal # 0.0...1.0 with 0.5 == mid-day
+  busy   = 2 * ( inday > 0.5 ? 1 - inday : inday ) # 0.0 least to 1.0 max
+  start  = day + DAY * inday
+  finish = start + normal * LEN * busy
+  ( start ... finish )
+end
+
+def simulate( starts, finishes )
+  now = Time.now
+  mid = Time.at( now.to_i - now.to_i % DAY )
+  day = mid - 3 * DAY
+
+  while day < now do
+    puts "Simulating #{day}"
+    # generate 100000 events
+    NUM.times do
+      sf = make( day )
+      # disregard anything after now
+      if sf.last < now then
+        starts << sf.first
+        finishes << sf.last
+      end
+    end
+    day += DAY
+  end
+
+  puts "Sorting"
+  starts.sort!
+  finishes.sort!
+end
+
+def process( starts, finishes, &block )
+  puts "Processing"
+  loop do
+    if starts.first && finishes.first then
+      if starts.first < finishes.first then
+        block.call( :start, starts.shift )
+      else
+        block.call( :finish, finishes.shift )
+      end
+    elsif starts.first
+      block.call( :start, starts.shift )
+    elsif finishes.first
+      block.call( :finish, finishes.shift )
+    else
+      break
+    end
+  end
+end
+
+monitor  = Performant::Configuration.default.monitor
+storage  = Performant::Configuration.default.storage
+starts   = []
+finishes = []
+
+simulate( starts, finishes )
+process( starts, finishes ) do |how,what|
+  storage.record( how, what )
+end
