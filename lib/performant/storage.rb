@@ -28,26 +28,26 @@ class Storage
     # true      false     operation finishing
     # false     false     ERROR
 
-    with_watch( busy_time_key, work_time_key, last_tick_key ) do
+    with_watch( busy_time_f_key, work_time_f_key, last_tick_f_key ) do
 
       operations = redis.get( operations_key ).to_i
       if operations > 0 then
-        last_tick = redis.get( last_tick_key ).to_f
-        busy_time = redis.get( busy_time_key ).to_f
-        work_time = redis.get( work_time_key ).to_f
-        busy_time += ( now.to_f - last_tick )
-        work_time += ( now.to_f - last_tick ) * operations
+        last_tick_f = redis.get( last_tick_f_key ).to_f
+        busy_time_f = redis.get( busy_time_f_key ).to_f
+        work_time_f = redis.get( work_time_f_key ).to_f
+        busy_time_f += ( now.to_f - last_tick_f )
+        work_time_f += ( now.to_f - last_tick_f ) * operations
         result = redis.multi do |r|
-          r.set( last_tick_key, now.to_f.to_s )
-          r.set( busy_time_key, busy_time )
-          r.set( work_time_key, work_time )
+          r.set( last_tick_f_key, now.to_f.to_s )
+          r.set( busy_time_f_key, busy_time_f.to_f.to_s )
+          r.set( work_time_f_key, work_time_f.to_f.to_s )
           start_finish == :start ? r.incr(operations_key) : r.decr(operations_key)
         end
         raise if ! ( result && result.size == 4 )
       else # operations == 0
         raise if start_finish != :start
         result = redis.multi do |r|
-          r.set( last_tick_key, now.to_f.to_s )
+          r.set( last_tick_f_key, now.to_f.to_s )
           r.incr( operations_key )
         end
         raise if ! ( result && result.size == 2 )
@@ -73,16 +73,16 @@ class Storage
     @operations ||= "#{@prefix}:operations"
   end
 
-  def busy_time_key
-    @busy_time_key ||= "#{@prefix}:busy_time"
+  def busy_time_f_key
+    @busy_time_f_key ||= "#{@prefix}:busy_time_f"
   end
 
-  def work_time_key
-    @work_time_key ||= "#{@prefix}:work_time"
+  def work_time_f_key
+    @work_time_f_key ||= "#{@prefix}:work_time_f"
   end
 
-  def last_tick_key
-    @last_tick_key ||= "#{@prefix}:last_tick"
+  def last_tick_f_key
+    @last_tick_f_key ||= "#{@prefix}:last_tick_f"
   end
 
   def redis

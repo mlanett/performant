@@ -13,9 +13,9 @@ describe Performant::Storage, redis: true do
     redis.get( "performant:operations" ).should eq("1")
     subject.record( :finish, now + 1 )
     redis.get( "performant:operations" ).should eq("0")
-    redis.get( "performant:busy_time" ).should eq("1.0")
-    redis.get( "performant:last_tick" ).should eq("1330220627.0")
-    redis.get( "performant:work_time" ).should eq("1.0")
+    redis.get( "performant:busy_time_f" ).should eq("1.0")
+    redis.get( "performant:last_tick_f" ).should eq("1330220627.0")
+    redis.get( "performant:work_time_f" ).should eq("1.0")
   end
 
   it "should record multiple overlapping operations" do
@@ -28,9 +28,9 @@ describe Performant::Storage, redis: true do
     redis.get( "performant:operations" ).should eq("1")
     subject.record( :finish, now + 3 )
     redis.get( "performant:operations" ).should eq("0")
-    redis.get( "performant:busy_time" ).should eq("3.0")
-    redis.get( "performant:last_tick" ).should eq("1330220629.0")
-    redis.get( "performant:work_time" ).should eq("4.0")
+    redis.get( "performant:busy_time_f" ).should eq("3.0")
+    redis.get( "performant:last_tick_f" ).should eq("1330220629.0")
+    redis.get( "performant:work_time_f" ).should eq("4.0")
   end
 
 end
