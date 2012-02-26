@@ -6,6 +6,7 @@ gemspec
 group :development, :test do
   gem "growl_notify"    # for guard
   gem "guard-rspec"
+  gem "mongo",          require: false # XXX probably should move
   gem "rake"
   gem "rb-fsevent"      # for guard
   gem "rspec"
