@@ -30,6 +30,10 @@ class Configuration
     configured Storage.new
   end
 
+  def monitor
+    configured Monitor.new
+  end
+
   def configured( it )
     it.configuration = self
     return it
