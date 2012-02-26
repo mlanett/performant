@@ -14,7 +14,7 @@ class Storage
   # this is a transactional operation
   # @raises an exception if it fails
   def record( start_finish, now = Time.now )
-    raise unless start_finish == :start || start_finish == :finish
+    raise LogicError unless start_finish == :start || start_finish == :finish
 
     # Every time there is an arrival or completion, look at the counter of currently executing queries.
     # If it is greater than 0, add the time elapsed since the last arrival or completion.
@@ -43,14 +43,16 @@ class Storage
           r.set( work_time_f_key, work_time_f.to_f.to_s )
           start_finish == :start ? r.incr(operations_key) : r.decr(operations_key)
         end
-        raise if ! ( result && result.size == 4 )
+        raise BusyTryAgain if ! result
+        raise LogicError if result.size != 4
       else # operations == 0
-        raise if start_finish != :start
+        raise Corruption if start_finish != :start
         result = redis.multi do |r|
           r.set( last_tick_f_key, now.to_f.to_s )
           r.incr( operations_key )
         end
-        raise if ! ( result && result.size == 2 )
+        raise BusyTryAgain if ! result
+        raise LogicError if result.size != 2
       end
 
     end # watch
@@ -88,6 +90,10 @@ class Storage
   def redis
     @redis ||= configuration.redis
   end
+
+  class BusyTryAgain < StandardError; end
+  class LogicError < Exception; end
+  class Corruption < Exception; end
 
 end # Storage
 end # Performant

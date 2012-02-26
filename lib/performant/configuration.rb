@@ -45,12 +45,14 @@ class Configuration
         end
         def configuration=( new_configuration )
           # allow configuration to be changed, *once*
-          raise if @configuration || ! new_configuration
+          raise Immutable if @configuration || ! new_configuration
           @configuration = new_configuration
         end
       end
     end
   end # Configurable
+
+  class Immutable < Exception; end
 
 end # Configuration
 end # Performant
