@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+
 module Performant
 class Configuration
 
@@ -6,6 +8,7 @@ class Configuration
   end
 
   attr :interval_size
+  attr :redis_options, true
 
   def initialize( options = {} )
     @interval_size = options[:interval_size] || 60
@@ -19,20 +22,35 @@ class Configuration
     (start ... finish)
   end
 
-  module Configurable
-    def self.included( it )
-      it.send( :attr, :configuration )
-      it.define_method( :configuration ) do
-        # auto-select default configuration if none present
-        @configuration ||= Configuration.default
-      end
-      it.define_method( :configuration= ) do |new_configuration|
-        # allow configuration to be changed, *once*
-        raise if @configuration || ! new_configuration
-        @configuration = new_configuration
-      end
-    end
+  def redis
+    redis_options ? Redis.connect( redis_options ) : Redis.connect
   end
 
-end
+  def storage
+    configured Storage.new
+  end
+
+  def configured( it )
+    it.configuration = self
+    return it
+  end
+
+  module Configurable
+    def self.included( c )
+      c.class_eval do
+        attr :configuration
+        def configuration
+          # auto-select default configuration if none present
+          @configuration ||= Configuration.default
+        end
+        def configuration=( new_configuration )
+          # allow configuration to be changed, *once*
+          raise if @configuration || ! new_configuration
+          @configuration = new_configuration
+        end
+      end
+    end
+  end # Configurable
+
+end # Configuration
 end # Performant
