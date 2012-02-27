@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "performant"
+
+Performant::Configuration.load src: File.expand_path( "../performant.yml", __FILE__ ), env: "development"
+
+def some_job
+  case x=rand
+  when x < 0.10
+    raise
+  else
+    sleep( 3*x )
+  end
+end
+
+monitor = Performant.monitor
+
+10.times do
+  monitor.run do
+    some_job
+  end
+end
