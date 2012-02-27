@@ -16,6 +16,7 @@ class Configuration
   # @returns a range containing the start and finish endpoints; this is a non-inclusive interval
   # e.g. you'll get something like 1:00 ... 2:00, not 1:00 .. 1:59:59
   def interval( time = Time.now )
+    # Ruby doesn't incorporate leap second support, so this approach works fine [2012 Feb 26 mlanett 1.9.2]
     start  = Time.at( time.to_i - time.to_i % interval_size )
     finish = start + interval_size
     (start ... finish)
