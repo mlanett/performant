@@ -32,4 +32,11 @@ describe Performant::Storage, redis: true, redis_configuration: true do
     redis.get( "performant:work_time_f" ).should eq("4.0")
   end
 
+  it "prohibits recording endpoints out of order" do
+    now = Time.at( 1330220626 )
+    subject.record_endpoint( :start, now )
+    expect { subject.record_endpoint( :start, now - 1 ) }.to raise_exception
+    expect { subject.record_endpoint( :finish, now ) }.to_not raise_exception
+  end
+
 end

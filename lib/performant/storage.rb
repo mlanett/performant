@@ -30,8 +30,9 @@ class Storage
     with_watch( busy_time_key, work_time_key, last_tick_key ) do
 
       operations = redis.get( operations_key ).to_i
+      last_tick_f = redis.get( last_tick_key ).to_f
+      raise LogicError if time < last_tick_f
       if operations > 0 then
-        last_tick_f = redis.get( last_tick_key ).to_f
         busy_time_f = redis.get( busy_time_key ).to_f
         work_time_f = redis.get( work_time_key ).to_f
         busy_time_f += ( time.to_f - last_tick_f )
