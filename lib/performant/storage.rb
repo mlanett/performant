@@ -31,7 +31,7 @@ class Storage
 
       operations = redis.get( operations_key ).to_i
       last_tick_f = redis.get( last_tick_key ).to_f
-      raise LogicError if time < last_tick_f
+      raise LogicError if time.to_f < last_tick_f
       if operations > 0 then
         busy_time_f = redis.get( busy_time_key ).to_f
         work_time_f = redis.get( work_time_key ).to_f
