@@ -10,6 +10,7 @@ class Configuration
   attr :redis_options, true
 
   def initialize( options = {} )
+    options  = Hash[ options.map { |k,v| [ k.to_sym, v ] } ].freeze # poor man's symbolize keys
     @interval_size = options[:interval_size] || 60
     @redis_options = options[:redis] || { url: "redis://127.0.0.1:6379/0" }
   end
