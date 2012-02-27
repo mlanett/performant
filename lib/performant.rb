@@ -10,11 +10,13 @@ module Performant
 
   class << self
 
+    # @returns a Monitor initialized from the default Configuration
     def monitor
       c = Configuration.default
       Monitor.new.tap { |it| it.configuration = c }
     end
 
+    # @returns a Storage initialized from the default Configuration
     def storage
       c = Configuration.default
       Storage.new.tap { |it| it.configuration = c }
