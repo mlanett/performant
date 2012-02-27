@@ -22,6 +22,21 @@ class Configuration
     (start ... finish)
   end
 
+  # @returns a range containing the start endpoints for the given range; this is inclusive.
+  def intervals( start, finish )
+    # 3:27
+    # 7:43
+    # 3 4 5 6 7
+    result = []
+    start  = interval(start).first
+    finish = Time.at finish.to_i
+    while start < finish
+      result << start
+      start  += interval_size
+    end
+    result
+  end
+
   def redis
     redis_options ? Redis.connect( redis_options ) : Redis.connect
   end
