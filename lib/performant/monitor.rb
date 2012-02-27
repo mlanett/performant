@@ -31,23 +31,8 @@ class Monitor
   # event processing
   #
 
-  def record( start_or_finish, time = Time.now )
-    timeout = Time.now + 10
-
-    begin
-      storage.record( start_or_finish, time )
-      return true
-
-    rescue Storage::BusyTryAgain => x
-      return false if timeout < Time.now
-      sleep(rand) # XXX not fiber-friendly!
-      retry
-
-    rescue => x
-      # XXX do something
-
-    end
-
+  def record( sof, time = Time.now )
+    storage.with_retries { storage.record( sof, time ) }
   end # record
 
   private
