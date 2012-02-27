@@ -35,6 +35,10 @@ class Monitor
     storage.with_retries { storage.record_endpoint( sof, time ) }
   end # record_endpoint
 
+  def storage
+    @storage ||= configuration.storage
+  end
+
   private
 
   def make_job_id( time = Time.now )

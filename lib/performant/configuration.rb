@@ -43,20 +43,34 @@ class Configuration
   end
 
   # ----------------------------------------------------------------------------
+  # Factory methods
+  # ----------------------------------------------------------------------------
+
+  def storage
+    configured Storage.new
+  end
+
+  def monitor
+    configured Monitor.new
+  end
+
+  # ----------------------------------------------------------------------------
   # Default Configuration
   # ----------------------------------------------------------------------------
 
   # @returns the default Configuration
   def self.default
-    @default || load( "#{ENV['RACK_ROOT']}/config/performant.yml", ENV["RACK_ENV"] )
+    @default || load
   end
 
   # Sets the default Configuration from a YAML+ERB file.
   # The file may contain a "default" block which will be merged into the environment blocks.
   # @returns the default Configuration
-  def self.load( src, env )
+  def self.load( options = {} )
+    src = options[:src] || "#{ENV['RACK_ROOT']}/config/performant.yml"
+    env = options[:env] || ENV["RACK_ENV"]
     yml = YAML.load( ERB.new( IO.read( src ) ).result )
-    set( ( yml["default"] || {} ).merge( yml[env] ) )
+    set( ( yml["default"] || {} ).merge( yml[env] || {} ) )
   end
 
   # Sets the default Configuration from a set of options.
@@ -87,6 +101,15 @@ class Configuration
   end # Configurable
 
   class Immutable < Exception; end
+
+  # ----------------------------------------------------------------------------
+  protected
+  # ----------------------------------------------------------------------------
+
+  def configured( thing )
+    thing.configuration = self
+    return thing
+  end
 
 end # Configuration
 end # Performant
