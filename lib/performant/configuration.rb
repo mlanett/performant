@@ -24,7 +24,7 @@ class Configuration
   end
 
   # @returns a list containing the start endpoints for the given range; this is inclusive.
-  def intervals( start, finish )
+  def buckets( start, finish )
     # 3:27
     # 7:43
     # 3 4 5 6 7
