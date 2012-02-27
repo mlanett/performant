@@ -22,7 +22,7 @@ class Configuration
     (start ... finish)
   end
 
-  # @returns a range containing the start endpoints for the given range; this is inclusive.
+  # @returns a list containing the start endpoints for the given range; this is inclusive.
   def intervals( start, finish )
     # 3:27
     # 7:43
@@ -30,7 +30,7 @@ class Configuration
     result = []
     start  = interval(start).first
     finish = Time.at finish.to_i
-    while start < finish
+    while start <= finish
       result << start
       start  += interval_size
     end

@@ -23,4 +23,14 @@ describe Performant::Configuration do
     ])
   end
 
+  it "should find the right intervals for an inclusive range" do
+    # 1330220626 => 2012-02-25 17:43:46 -0800
+    # 1330220700 => 2012-02-25 17:45:00
+    subject.intervals( 1330220626, 1330220700 ).should eq([
+      Time.at(1330220580), # 17:43:00
+      Time.at(1330220640), # 17:44:00
+      Time.at(1330220700)  # 17:45:00
+    ])
+  end
+
 end
