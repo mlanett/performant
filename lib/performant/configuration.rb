@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
-require "yaml"
 require "erb"
+require "redis"
+require "yaml"
 
 module Performant
 class Configuration

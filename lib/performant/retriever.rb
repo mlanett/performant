@@ -1,6 +1,4 @@
 # -*- encoding: utf-8 -*-
-require "fiber"
-require "redis"
 
 module Performant
 class Retriever
