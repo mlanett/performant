@@ -16,5 +16,9 @@ RSpec.configure do |spec|
       example.run
     end
   end
-end
 
+  spec.around( :each, redis_configuration: true ) do |example|
+    Performant::Configuration.set redis: { url: RedisHelper::TEST_REDIS }
+  end
+
+end

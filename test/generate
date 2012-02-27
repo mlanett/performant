@@ -69,8 +69,8 @@ def process( starts, finishes, &block )
   end
 end
 
-monitor  = Performant::Configuration.default.monitor
-storage  = Performant::Configuration.default.storage
+monitor  = Performant.monitor
+storage  = Performant.storage
 starts   = []
 finishes = []
 

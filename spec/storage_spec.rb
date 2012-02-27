@@ -2,10 +2,9 @@
 
 require "helper"
 
-describe Performant::Storage, redis: true do
+describe Performant::Storage, redis: true, redis_configuration: true do
 
-  let(:configuration) { Performant::Configuration.new.tap { |c| c.redis_options = RedisHelper::TEST_REDIS } }
-  subject { configuration.storage }
+  subject { Performant.storage }
 
   it "should record one operation" do
     now = Time.at( 1330220626 )

@@ -1,17 +1,16 @@
 # -*- encoding: utf-8 -*-
+require "yaml"
+require "erb"
 
 module Performant
 class Configuration
-
-  def self.default
-    Configuration.new
-  end
 
   attr :interval_size
   attr :redis_options, true
 
   def initialize( options = {} )
     @interval_size = options[:interval_size] || 60
+    @redis_options = options[:redis] || { url: "redis://127.0.0.1:6379/0" }
   end
 
   # @returns a range containing the start and finish endpoints; this is a non-inclusive interval
@@ -26,18 +25,28 @@ class Configuration
     redis_options ? Redis.connect( redis_options ) : Redis.connect
   end
 
-  def storage
-    configured Storage.new
+  # ----------------------------------------------------------------------------
+  # Default Configuration
+  # ----------------------------------------------------------------------------
+
+  # @returns the default Configuration
+  def self.default
+    @default || load( "#{ENV['RACK_ROOT']}/config/performant.yml", ENV["RACK_ENV"] )
   end
 
-  def monitor
-    configured Monitor.new
+  # @returns the default Configuration
+  def self.load( src, env )
+    set( YAML.load( ERB.new( IO.read( src ) ).result ) [ env ] )
   end
 
-  def configured( it )
-    it.configuration = self
-    return it
+  # @returns the default Configuration
+  def self.set( options )
+    @default = Configuration.new( options )
   end
+
+  # ----------------------------------------------------------------------------
+  # Metaprogramming for client classes
+  # ----------------------------------------------------------------------------
 
   module Configurable
     def self.included( c )
