@@ -3,8 +3,14 @@ require "helper"
 
 describe Performant::Configuration do
 
+  describe "loading" do
 
+    it "can be loaded" do
+      Performant::Configuration.load src: File.expand_path( "../configuration_spec_loading.yml", __FILE__ ), env: "test"
+      Performant::Configuration.default.interval_size.should eq(10)
+    end
 
+  end # loading
 
   describe "buckets" do
 
