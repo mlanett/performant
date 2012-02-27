@@ -12,7 +12,7 @@ class Storage
 
   # this is a transactional operation
   # @raises an exception if it fails
-  def record( sof, time = Time.now )
+  def record_endpoint( sof, time = Time.now )
     raise LogicError unless sof == :start || sof == :finish
 
     # Every time there is an arrival or completion, look at the counter of currently executing queries.
@@ -56,7 +56,7 @@ class Storage
 
     end # watch
 
-  end # record
+  end # record_endpoint
 
   # returns false if we fail to execute the block before the timeout
   def with_retries( timeout = 10, &block )

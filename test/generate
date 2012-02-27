@@ -76,5 +76,5 @@ finishes = []
 
 simulate( starts, finishes )
 process( starts, finishes ) do |how,what|
-  storage.record( how, what )
+  storage.record_endpoint( how, what )
 end

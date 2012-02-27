@@ -10,12 +10,12 @@ class Monitor
   # returns the job id
   def start( time = Time.now )
     id = make_job_id( time )
-    record( :start, time )
+    record_endpoint( :start, time )
     return id
   end
 
   def finish( job_id, time = Time.now )
-    record( :finish, time )
+    record_endpoint( :finish, time )
   end
 
   def run( &block )
@@ -31,9 +31,9 @@ class Monitor
   # event processing
   #
 
-  def record( sof, time = Time.now )
-    storage.with_retries { storage.record( sof, time ) }
-  end # record
+  def record_endpoint( sof, time = Time.now )
+    storage.with_retries { storage.record_endpoint( sof, time ) }
+  end # record_endpoint
 
   private
 
