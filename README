@@ -53,3 +53,13 @@ Intervals for rollups:
 See also:
 http://www.mysqlperformanceblog.com/2011/04/27/the-four-fundamental-performance-metrics/
 http://www.mysqlperformanceblog.com/2011/05/05/the-two-even-more-fundamental-performance-metrics/
+
+Sampler daemon ideas:
+The sampler may/will need a specific configuration file.
+It will run from an installed gem.
+e.g. sampler -c ~/foo/bar/config.yml -e production COMMAND
+Pid and Log file location may be set in the config file.
+It might be better if the configuration file is self-executing, e.g.
+  ~/foo/bar/sampler -e production COMMAND
+It will need to support bundler, e.g.
+  ( cd ~/foo/bar; bundle exec sampler -e production COMMAND )
