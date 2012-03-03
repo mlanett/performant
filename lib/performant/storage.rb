@@ -13,7 +13,7 @@ class Storage
   # this is a transactional operation
   # @raises an exception if it fails
   def record_endpoint( sof, time = Time.now )
-    raise LogicError unless sof == :start || sof == :finish
+    raise LogicError, "Unknown endpoint #{sof}" unless sof == :start || sof == :finish
 
     # Every time there is an arrival or completion, look at the counter of currently executing queries.
     # If it is greater than 0, add the time elapsed since the last arrival or completion.
@@ -31,7 +31,7 @@ class Storage
 
       operations = redis.get( operations_key ).to_i
       last_tick_f = redis.get( last_tick_key ).to_f
-      raise LogicError if time.to_f < last_tick_f
+      raise LogicError, "Negative Time Delta" if time.to_f < last_tick_f
       if operations > 0 then
         busy_time_f = redis.get( busy_time_key ).to_f
         work_time_f = redis.get( work_time_key ).to_f
@@ -44,7 +44,7 @@ class Storage
           sof == :start ? r.incr(operations_key) : r.decr(operations_key)
         end
         raise BusyTryAgain if ! result
-        raise LogicError if result.size != 4
+        raise Corruption, "Unknown Result Count #{result.size}" if result.size != 4
       else # operations == 0
         raise Corruption if sof != :start
         result = redis.multi do |r|
@@ -52,7 +52,7 @@ class Storage
           r.incr( operations_key )
         end
         raise BusyTryAgain if ! result
-        raise LogicError if result.size != 2
+        raise Corruption, "Unknown Result Count #{result.size}" if result.size != 2
       end
 
     end # watch
