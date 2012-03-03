@@ -12,11 +12,33 @@ Execution time: divide the weighted time by the number of queries in the interva
 Concurrency: divide the weighted time by the length of the interval.
 Utilization: divide the busy time by the length of the interval.
 
+How do we calculate this?
+
+The approach which works is to have each job execute two actions:
+  Start:
+    Increment the basic metrics.
+    Add itself to a running job set, with a timeout.
+  Finish:
+    Check if it is still in the running job set.
+    If so,
+      Remove itself from the running job set.
+      Increment/decrement the basic metrics.
+
+One problem with this approach is that start and finish actions must be balanced, but jobs can die.
+So relying on the job to execute the finish action is not robust.
+This is solved by the monitor.
+
+At the same time we need to processes to run continuously.
+  Sampler:
+    The sampler reads the basic metrics and calculates the long-term average metrics.
+  Monitor:
+    The monitor checks for jobs which died without executing Finish actions.
+    It removes them from the running job set and performs the Finish action for them.
 
 Redis Keys:
 
-Performant:Kind:Running     < SortedSet < ID sorted by Start time > >
-Performant:Kind:Operations  < integer >
+Performant:Kind:Running     < SortedSet < ID scored by Expire time > >
+Performant:Kind:Operations  < integer > = Size of {Running}
 Performant:Kind:Busy Time   < float >
 Performant:Kind:Work Time   < float >
 Performant:Kind:Last Tick   < float >
