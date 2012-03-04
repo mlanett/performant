@@ -1,80 +1,71 @@
 #!/usr/bin/env ruby
 
-def bits(x)
-  Math.log(x) / Math.log(2)
-end
-
 require "bundler/setup"
 require "performant"
 
 # generate 3+e days of data
 # for each day, generate data on a bell curve
 
-DAY = 86400
-NUM = 10000
-LEN = 5
+DAY   = 86400
+NUM   = 10000 # per day
+LEN_s = 10   # max for each event
 
 def normal
   ( rand + rand + rand + rand + rand + rand + rand + rand ) / 8.0
 end
 
-def make( day )
+def event( day )
+  # create a single event in day
+  # events will cluster around mid-day
+  # events will also get longer around mid-day
   inday  = normal # 0.0...1.0 with 0.5 == mid-day
   busy   = 2 * ( inday > 0.5 ? 1 - inday : inday ) # 0.0 least to 1.0 max
   start  = day + DAY * inday
-  finish = start + normal * LEN * busy
+  finish = start + normal * LEN_s * busy
   ( start ... finish )
 end
 
-def simulate( starts, finishes )
+def simulate()
+  events = []
+  # generate 100000 events
   now = Time.now
   mid = Time.at( now.to_i - now.to_i % DAY )
   day = mid - 3 * DAY
+  nid = 1
 
   while day < now do
     puts "Simulating #{day}"
-    # generate 100000 events
     NUM.times do
-      sf = make( day )
+      id   = nid.to_s
+      nid += 1
+      sf   = event( day )
       # disregard anything after now
       if sf.last < now then
-        starts << sf.first
-        finishes << sf.last
+        events << [ id, :start, sf.first ]
+        events << [ id, :finish, sf.last ]
       end
     end
     day += DAY
   end
 
   puts "Sorting"
-  starts.sort!
-  finishes.sort!
+  events.sort_by { |e| e.last }
 end
 
-def process( starts, finishes, &block )
-  puts "Processing"
-  loop do
-    if starts.first && finishes.first then
-      if starts.first < finishes.first then
-        block.call( :start, starts.shift )
-      else
-        block.call( :finish, finishes.shift )
-      end
-    elsif starts.first
-      block.call( :start, starts.shift )
-    elsif finishes.first
-      block.call( :finish, finishes.shift )
+def record( events, storage )
+  puts "Recording"
+  events.each do |event|
+    if event[1] == :start
+      storage.record_start( event[0], time: event[2] )
     else
-      break
+      storage.record_finish( event[0], time: event[2] )
     end
   end
 end
 
-monitor  = Performant.monitor
-storage  = Performant.storage
-starts   = []
-finishes = []
+Performant::Configuration.load( src: File.expand_path( "../performant.yml", __FILE__ ), env: "test" ).default!
+monitor = Performant.monitor
+storage = Performant.storage.client
 
-simulate( starts, finishes )
-process( starts, finishes ) do |how,what|
-  storage.record_endpoint( how, what )
-end
+events = simulate()
+record( events, storage )
