@@ -1,6 +1,8 @@
 # -*- encoding: utf-8 -*-
 require "redis"
 
+module Performant
+module Test
 module RedisHelper
 
   TEST_REDIS = { url: "redis://127.0.0.1:6379/1" }
@@ -36,3 +38,5 @@ module RedisHelper
   end
 
 end # RedisClient
+end # Test
+end # Performant
