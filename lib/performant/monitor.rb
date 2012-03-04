@@ -10,12 +10,12 @@ class Monitor
   # returns the job id
   def start( time = Time.now )
     id = make_job_id( time )
-    record_endpoint( :start, time )
+    storage.record_start( id, time: time )
     return id
   end
 
   def finish( job_id, time = Time.now )
-    record_endpoint( :finish, time )
+    storage.record_finish( id, time: time )
   end
 
   def run( &block )
@@ -30,10 +30,6 @@ class Monitor
   #
   # event processing
   #
-
-  def record_endpoint( sof, time = Time.now )
-    storage.with_retries { storage.record_endpoint( sof, time ) }
-  end # record_endpoint
 
   def storage
     @storage ||= configuration.storage
