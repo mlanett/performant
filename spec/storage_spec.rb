@@ -48,4 +48,14 @@ describe Performant::Storage, redis: true, redis_configuration: true do
 
   it "prohibits recording endpoints out of order"
 
+  it "can sample and update" do
+    now = Time.at( 1330220626 )
+
+    subject.record_start( "a", time: now )
+    subject.sample!( now+1 ).should eq( { jobs: 1, busy: 1.0, work: 1.0 } )
+
+    subject.record_finish( "a", time: now+2 )
+    subject.sample!( now+3 ).should eq( { jobs: 0, busy: 2.0, work: 2.0 } )
+  end
+
 end

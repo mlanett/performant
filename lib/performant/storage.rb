@@ -29,6 +29,46 @@ class Storage
       return { jobs: result[0], busy: (result[1].to_i / 1000.0), work: (result[2].to_i / 1000.0) }
     end
 
+    # Updates the busy and work values
+    def sample!( time = Time.now )
+      time_ms = to_ms( time )
+
+      with_watch( *all_keys ) do
+
+        operations = redis.zcard( jobs_key )
+        last_ms    = redis.get( last_key ).to_i
+        diff_ms    = time_ms - last_ms
+
+        raise OutOfOrder.new(diff_ms.to_s) if diff_ms < 0
+
+        result = if operations > 0 then
+          # Increment time consumed by current jobs.
+          # And fetch the cumulative work values.
+
+          multi(5) do |r|
+            r.incrby( busy_key, diff_ms )
+            r.incrby( work_key, diff_ms * operations )
+            r.set( last_key, time_ms )
+            r.get( busy_key )
+            r.get( work_key )
+          end.slice(3,2)
+
+        else
+
+          # Nothing is running, just update the timestamp.
+          # And fetch the cumulative work values.
+          multi(3) do |r|
+            r.set( last_key, time_ms )
+            r.get( busy_key )
+            r.get( work_key )
+          end.slice(1,2)
+
+        end # result
+
+        return { jobs: operations, busy: (result[0].to_i / 1000.0), work: (result[1].to_i / 1000.0) }
+      end # watch
+    end # sample!
+
     # this is a transactional operation - it can fail
     # If the given job is already running, the timeout is extended.
     # XXX some operations may occur out of order
