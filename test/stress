@@ -1,0 +1,34 @@
+#!/usr/bin/env ruby
+# -*- encoding: utf-8 -*-
+require "bundler/setup"
+require "optparse"
+require "ostruct"
+require "performant"
+
+# 10 processes
+# 10 seconds
+# start-finish repeatedly
+# count failures (false)
+# count errors
+
+my = OpenStruct.new
+
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: #{__FILE__} [options]*"
+  opts.on( "-h", "--help",          "Display this usage summary." ) { puts opts; exit }
+  opts.on( "-p", "--processes NUM", "How many processes.")          { |s| my.processes = s.to_i }
+  opts.on( "-s", "--duration  NUM", "How long to test.")            { |s| my.duration  = s.to_i }
+end.parse!(ARGV)
+
+my.processes.times do
+  fork do
+    Performant::Configuration.load src: File.expand_path( "../performant.yml", __FILE__ ), env: "test"
+    monitor = Performant.monitor
+    expiration = Time.now + my.duration
+    while Time.now < expiration do
+      monitor.run() { sleep(rand) }
+    end
+  end
+end
+
+Process.waitall
