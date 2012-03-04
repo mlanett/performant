@@ -3,18 +3,18 @@ Records four fundamental performance metrics:
 The observation interval under observation.
 The number of operations in the interval.
 The total time during which operations resided in the system — the “busy time.”
-The total execution time of all operations — the “weighted time.”
+The total execution time of all operations — the “working time.”
 
 What is this good for? We can use these together with Little’s Law to derive these additional four long-term average metrics:
 
 Throughput: divide the number of queries in the observation interval by the length of the interval.
-Execution time: divide the weighted time by the number of queries in the interval.
-Concurrency: divide the weighted time by the length of the interval.
+Execution time: divide the working time by the number of queries in the interval.
+Concurrency: divide the working time by the length of the interval.
 Utilization: divide the busy time by the length of the interval.
 
 How do we calculate this?
 
-The approach which works is to have each job execute two actions:
+An approach which works is to have each job execute two actions:
   Start:
     Increment the basic metrics.
     Add itself to a running job set, with a timeout.
@@ -26,22 +26,32 @@ The approach which works is to have each job execute two actions:
 
 One problem with this approach is that start and finish actions must be balanced, but jobs can die.
 So relying on the job to execute the finish action is not robust.
-This is solved by the monitor.
+This is partly solved by the monitor.
 
-At the same time we need to processes to run continuously.
+At the same time we need two processes to run continuously.
   Sampler:
     The sampler reads the basic metrics and calculates the long-term average metrics.
   Monitor:
-    The monitor checks for jobs which died without executing Finish actions.
-    It removes them from the running job set and performs the Finish action for them.
+    The monitor checks for jobs which died without executing finish actions.
+    It removes them from the running job set and performs the finish action for them.
+
+Special cases we have to support:
+  Restarts:
+    A job starts, then dies.
+    Before the monitor can clean up the job, it is restarted.
+    The job goes to register itself, but it already has “started”.
+  Expiration:
+    A job registers with an expiration, but takes longer than that to execute.
+    Before it finished, the monitor cleans up the job's entry.
+    The job goes to execute the finish actions, but it has already “finished”.
 
 Redis Keys:
 
-Performant:Kind:Running     < SortedSet < ID scored by Expire time > >
-Performant:Kind:Operations  < integer > = Size of {Running}
-Performant:Kind:Busy Time   < float >
-Performant:Kind:Work Time   < float >
-Performant:Kind:Last Tick   < float >
+Performant:Kinds              < Set < Kind > >
+Performant:{Kind}:Running     < SortedSet < Job ID scored by Expire time > >
+Performant:{Kind}:Busy Time   < float >
+Performant:{Kind}:Work Time   < float >
+Performant:{Kind}:Last Tick   < float >
 
 Intervals for rollups:
   1 second for at least the past 1 minute (60...120 records)
