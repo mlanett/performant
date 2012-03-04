@@ -14,7 +14,7 @@ class Monitor
     return id
   end
 
-  def finish( job_id, time = Time.now )
+  def finish( id, time = Time.now )
     storage.record_finish( id, time: time )
   end
 
