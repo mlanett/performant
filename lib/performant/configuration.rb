@@ -59,25 +59,23 @@ class Configuration
   # Default Configuration
   # ----------------------------------------------------------------------------
 
-  # @returns the default Configuration
-  def self.default
-    @default || load
+  def default!
+    @@default = self
   end
 
-  # Sets the default Configuration from a YAML+ERB file.
-  # The file may contain a "default" block which will be merged into the environment blocks.
   # @returns the default Configuration
+  def self.default
+    @@default ||= load
+  end
+
+  # Loads a Configuration from a YAML+ERB file.
+  # The file may contain a "default" block which will be merged into the environment blocks.
+  # @returns a Configuration
   def self.load( options = {} )
     src = options[:src] || "#{ENV['RACK_ROOT']}/config/performant.yml"
     env = options[:env] || ENV["RACK_ENV"]
     yml = YAML.load( ERB.new( IO.read( src ) ).result )
-    set( ( yml["default"] || {} ).merge( yml[env] || {} ) )
-  end
-
-  # Sets the default Configuration from a set of options.
-  # @returns the default Configuration
-  def self.set( options )
-    @default = Configuration.new( options )
+    Configuration.new( ( yml["default"] || {} ).merge( yml[env] || {} ) )
   end
 
   # ----------------------------------------------------------------------------

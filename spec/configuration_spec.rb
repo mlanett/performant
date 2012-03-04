@@ -3,14 +3,37 @@ require "helper"
 
 describe Performant::Configuration do
 
-  describe "loading" do
+  describe "creation" do
+
+    it "can be created" do
+      c = Performant::Configuration.new interval_size: 5
+      c.interval_size.should eq(5)
+    end
 
     it "can be loaded" do
-      Performant::Configuration.load src: File.expand_path( "../configuration_spec_loading.yml", __FILE__ ), env: "test"
+      c = Performant::Configuration.load src: File.expand_path( "../spec_10_0.yml", __FILE__ ), env: "test"
+      c.interval_size.should eq(10)
+    end
+
+    it "can be set to default" do
+      c = Performant::Configuration.load src: File.expand_path( "../spec_10_0.yml", __FILE__ ), env: "test"
+      c.default!
       Performant::Configuration.default.interval_size.should eq(10)
     end
 
-  end # loading
+  end
+
+  describe "factory" do
+
+    it "can make redis" do
+      Performant::Configuration.default.redis.should be_instance_of(Redis)
+      c = Performant::Configuration.load src: File.expand_path( "../spec_10_0.yml", __FILE__ ), env: "test"
+      c.redis.should be_instance_of(Redis)
+      c = Performant::Configuration.new
+      c.redis.should be_instance_of(Redis)
+    end
+
+  end # factory
 
   describe "buckets" do
 
