@@ -37,11 +37,13 @@ describe Performant::Storage, redis: true, redis_configuration: true do
 
   it "should record multiple overlapping operations" do
     now = Time.at( 1330220626 )
-    subject.record_start( "alpha", time: now )
-    subject.record_start( "beta", time: now + 1 )
-    subject.record_finish( "alpha", time: now + 2 )
-    subject.record_finish( "beta", time: now + 3 )
-    subject.sample.should eq( { jobs: 0, busy: 3.0, work: 4.0 } )
+    subject.record_start( "a", time: now )
+    subject.record_start( "b", time: now + 1 )
+    subject.record_start( "c", time: now + 2 )
+    subject.record_finish( "c", time: now + 3 )
+    subject.record_finish( "a", time: now + 4 )
+    subject.record_finish( "b", time: now + 5 )
+    subject.sample.should eq( { jobs: 0, busy: 5.0, work: 9.0 } )
   end
 
   it "prohibits recording endpoints out of order"
