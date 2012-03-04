@@ -6,7 +6,7 @@ class Storage
 
   include Configuration::Configurable
 
-  def client( kind )
+  def client( kind = "test" )
     Client.new( redis, kind )
   end
 
