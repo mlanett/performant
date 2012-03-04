@@ -1,0 +1,14 @@
+#!/usr/bin/env ruby
+
+require "bundler/setup"
+require "performant"
+
+v = Performant::VERSION.split(".").map( &:to_i )
+v[2] = v[2] + 1
+
+vf = File.expand_path( "../../lib/performant/version.rb", __FILE__ )
+File.open(vf,"w") do |io|
+  io.puts "module Performant"
+  io.puts "  VERSION = '#{v.join('.')}'"
+  io.puts "end"
+end
