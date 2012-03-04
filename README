@@ -49,9 +49,11 @@ Redis Keys:
 
 Performant:Kinds              < Set < Kind > >
 Performant:{Kind}:Running     < SortedSet < Job ID scored by Expire time > >
-Performant:{Kind}:Busy Time   < float >
-Performant:{Kind}:Work Time   < float >
-Performant:{Kind}:Last Tick   < float >
+Performant:{Kind}:Busy Time   < int(ms) >
+Performant:{Kind}:Work Time   < int(ms) >
+Performant:{Kind}:Last Tick   < int(ms) >
+
+Timestamps and durations are stored as integers in milliseconds.
 
 Intervals for rollups:
   1 second for at least the past 1 minute (60...120 records)
