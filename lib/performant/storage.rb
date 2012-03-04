@@ -22,8 +22,8 @@ class Storage
     def sample
       result = redis.multi do |r|
         r.zcard( jobs_key )
-        r.get( busy_key ).to_i / 1000.0
-        r.get( work_key ).to_i / 1000.0
+        r.get( busy_key )
+        r.get( work_key )
       end
 
       return { jobs: result[0], busy: (result[1].to_i / 1000.0), work: (result[2].to_i / 1000.0) }
@@ -50,7 +50,7 @@ class Storage
         diff_ms    = time_ms - last_ms
         has_job    = ! redis.zrank( jobs_key, id ).nil?
 
-        raise LogicError, "Negative Time Delta" if diff_ms < 0
+        raise OutOfOrder, "Negative Time Delta" if diff_ms < 0
 
         if has_job then
           # This job is already running?! Not expected. But could happen.
@@ -83,9 +83,7 @@ class Storage
           end
 
         end
-
       end # watch
-
       self
     end # record_start
 
@@ -100,8 +98,8 @@ class Storage
         diff_ms    = time_ms - last_ms
         has_job    = ! redis.zrank( jobs_key, id ).nil?
 
-        raise LogicError, "Job is not running" if ! has_job
-        raise LogicError, "Negative Time Delta" if diff_ms < 0
+        raise NoSuchJob, "Job is not running" if ! has_job
+        raise OutOfOrder, "Negative Time Delta" if diff_ms < 0
 
         multi(4) do |r|
           r.incrby( busy_key, diff_ms )
@@ -111,7 +109,6 @@ class Storage
         end
 
       end # watch
-
       self
     end # record_finish
 
@@ -140,6 +137,7 @@ class Storage
       result = redis.multi(&block)
       raise BusyTryAgain if ! result
       raise Corruption, "Unexpected Result Count #{result.size}" if result.size != count
+      result
     end
 
     def with_watch( *args, &block )
@@ -181,7 +179,8 @@ class Storage
   end
 
   class BusyTryAgain < StandardError; end
-  class LogicError < Exception; end
+  class OutOfOrder < StandardError; end
+  class NoSuchJob < Exception; end
   class Corruption < Exception; end
 
 end # Storage

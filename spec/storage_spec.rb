@@ -22,27 +22,27 @@ describe Performant::Storage, redis: true, redis_configuration: true do
   it "should record one operation" do
     now = Time.at( 1330220626 )
     subject.record_start( "a", time: now )
-    subject.record_finish( "a", time: now + 1 )
+    subject.record_finish( "a", time: now+1 )
     subject.sample.should eq( { jobs: 0, busy: 1.0, work: 1.0 } )
   end
 
   it "should record sequential operations" do
     now = Time.at( 1330220626 )
     subject.record_start( "a", time: now )
-    subject.record_finish( "a", time: now + 1 )
-    subject.record_start( "b", time: now + 2 )
-    subject.record_finish( "b", time: now + 3 )
+    subject.record_finish( "a", time: now+1 )
+    subject.record_start( "b", time: now+2 )
+    subject.record_finish( "b", time: now+3 )
     subject.sample.should eq( { jobs: 0, busy: 2.0, work: 2.0 } )
   end
 
   it "should record multiple overlapping operations" do
     now = Time.at( 1330220626 )
     subject.record_start( "a", time: now )
-    subject.record_start( "b", time: now + 1 )
-    subject.record_start( "c", time: now + 2 )
-    subject.record_finish( "c", time: now + 3 )
-    subject.record_finish( "a", time: now + 4 )
-    subject.record_finish( "b", time: now + 5 )
+    subject.record_start( "b", time: now+1 )
+    subject.record_start( "c", time: now+2 )
+    subject.record_finish( "c", time: now+3 )
+    subject.record_finish( "a", time: now+4 )
+    subject.record_finish( "b", time: now+5 )
     subject.sample.should eq( { jobs: 0, busy: 5.0, work: 9.0 } )
   end
 
