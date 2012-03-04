@@ -14,4 +14,5 @@ end
 
 group :test do
   gem "simplecov",      require: false
+# gem "plymouth"        # invoke pry after rspec failures
 end
