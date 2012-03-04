@@ -17,7 +17,7 @@ end
 monitor = Performant.monitor
 
 10.times do
-  monitor.run do
+  monitor.track do
     some_job
   end
 end

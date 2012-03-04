@@ -18,7 +18,7 @@ class Monitor
     storage.record_finish( id, time: time )
   end
 
-  def run( &block )
+  def track( kind = "test", timeout = 60, &block )
     id = start
     begin
       yield
@@ -38,7 +38,8 @@ class Monitor
   private
 
   def make_job_id( time = Time.now )
-    "%s:%d:%s:%s:%f" % [ `hostname`.chomp, Process.pid, Thread.current.object_id, Fiber.current.object_id, time.to_f ]
+    @hostname ||= `hostname`.chomp
+    "%s:%d:%s:%s:%f" % [ @hostname, Process.pid, Thread.current.object_id.to_s(36), Fiber.current.object_id.to_s(36), time.to_f ]
   end
 
 end # Monitor

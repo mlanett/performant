@@ -22,11 +22,11 @@ end.parse!(ARGV)
 
 my.processes.times do
   fork do
-    Performant::Configuration.load src: File.expand_path( "../performant.yml", __FILE__ ), env: "test"
+    Performant::Configuration.load( src: File.expand_path( "../performant.yml", __FILE__ ), env: "test" ).default!
     monitor = Performant.monitor
     expiration = Time.now + my.duration
     while Time.now < expiration do
-      monitor.run() { sleep(rand) }
+      monitor.track() { sleep(rand) }
     end
   end
 end
