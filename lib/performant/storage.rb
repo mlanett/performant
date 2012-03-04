@@ -44,7 +44,7 @@ class Storage
           sof == :start ? r.incr(operations_key) : r.decr(operations_key)
         end
         raise BusyTryAgain if ! result
-        raise Corruption, "Unknown Result Count #{result.size}" if result.size != 4
+        raise Corruption, "Unexpected Result Count #{result.size}" if result.size != 4
       else # operations == 0
         raise Corruption if sof != :start
         result = redis.multi do |r|
@@ -52,7 +52,7 @@ class Storage
           r.incr( operations_key )
         end
         raise BusyTryAgain if ! result
-        raise Corruption, "Unknown Result Count #{result.size}" if result.size != 2
+        raise Corruption, "Unexpected Result Count #{result.size}" if result.size != 2
       end
 
     end # watch
