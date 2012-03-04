@@ -90,7 +90,7 @@ class Storage
         diff_ms    = time_ms - last_ms
         has_job    = ! redis.zrank( jobs_key, id ).nil?
 
-        raise OutOfOrder, "Negative Time Delta" if diff_ms < 0
+        raise OutOfOrder.new(diff_ms.to_s) if diff_ms < 0
 
         if has_job then
           # This job is already running?! Not expected. But could happen.
@@ -139,7 +139,7 @@ class Storage
         has_job    = ! redis.zrank( jobs_key, id ).nil?
 
         raise NoSuchJob, "Job is not running" if ! has_job
-        raise OutOfOrder, "Negative Time Delta" if diff_ms < 0
+        raise OutOfOrder.new(diff_ms.to_s) if diff_ms < 0
 
         multi(4) do |r|
           r.incrby( busy_key, diff_ms )
