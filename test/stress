@@ -11,7 +11,7 @@ require "performant"
 # count failures (false)
 # count errors
 
-my = OpenStruct.new
+my = OpenStruct.new processes: 10, duration: 10
 
 optparse = OptionParser.new do |opts|
   opts.banner = "Usage: #{__FILE__} [options]*"
@@ -20,15 +20,23 @@ optparse = OptionParser.new do |opts|
   opts.on( "-s", "--duration  NUM", "How long to test.")            { |s| my.duration  = s.to_i }
 end.parse!(ARGV)
 
+Performant::Configuration.load( src: File.expand_path( "../performant.yml", __FILE__ ), env: "test" ).default!
+
+quit = Time.now + my.duration
 my.processes.times do
   fork do
-    Performant::Configuration.load( src: File.expand_path( "../performant.yml", __FILE__ ), env: "test" ).default!
     monitor = Performant.monitor
-    expiration = Time.now + my.duration
-    while Time.now < expiration do
+    while Time.now < quit do
       monitor.track() { sleep(rand) }
     end
   end
+end
+
+# Meanwhile, we can sample.
+s = Performant.storage.client("stress")
+while Time.now < quit do
+  sleep(1)
+  puts s.sample!.inspect
 end
 
 Process.waitall
