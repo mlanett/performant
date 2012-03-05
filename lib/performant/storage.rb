@@ -153,7 +153,7 @@ class Storage
       begin
         return block.call
 
-      rescue BusyTryAgain => x
+      rescue Interrupted => x
         return false if expiration < Time.now
         sleep(rand) # XXX not fiber-friendly!
         retry
@@ -186,7 +186,7 @@ class Storage
 
     def multi( count, &block )
       result = redis.multi(&block)
-      raise BusyTryAgain if ! result
+      raise Interrupted if ! result
       raise UnexpectedResults.new(result.size.to_s) if result.size != count
       result
     end
@@ -229,7 +229,7 @@ class Storage
     @redis ||= configuration.redis
   end
 
-  class BusyTryAgain < StandardError; end
+  class Interrupted < StandardError; end
   class OutOfOrder < StandardError; end
   class NoSuchJob < Exception; end
   class UnexpectedResults < Exception; end
