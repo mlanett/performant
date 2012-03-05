@@ -54,7 +54,6 @@ describe Performant::Storage, redis: true, redis_configuration: true do
     # c does not get started, so do not finish it
     expect { subject.record_finish( "b", time: now+1 ) }.to_not raise_exception
     expect { subject.record_finish( "a", time: now+1 ) }.to_not raise_exception
-    puts subject.sample.inspect
     subject.sample.should eq( { jobs: 0, busy: 1.0, work: 2.0 } )
   end
 
