@@ -146,21 +146,6 @@ class Storage
       self
     end # record_finish
 
-    # returns false if we fail to execute the block before the timeout
-    def with_retries( timeout = 10, &block )
-      expiration = Time.now + timeout
-
-      begin
-        return block.call
-
-      rescue Interrupted => x
-        return false if expiration < Time.now
-        sleep(rand) # XXX not fiber-friendly!
-        retry
-
-      end
-    end
-
     protected
 
     # We calculate the difference between two times
