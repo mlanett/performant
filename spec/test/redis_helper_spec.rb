@@ -18,4 +18,24 @@ describe Performant::Test::RedisHelper do
     redis.get("foo").should eq(nil)
   end
 
+  it "should be able to watch stuff" do
+    with_clean_redis do
+
+      with_watch( redis, "foo" ) do
+        other.set "foo", "interference"
+        redis.multi do |r|
+          r.set "foo", "my value"
+        end
+      end.should be_nil
+
+      with_watch( redis, "foo" ) do
+        # no interference
+        redis.multi do |r|
+          r.set "foo", "my value"
+        end
+      end.should eq(["OK"])
+
+    end
+  end
+
 end
