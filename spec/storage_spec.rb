@@ -46,7 +46,17 @@ describe Performant::Storage, redis: true, redis_configuration: true do
     subject.sample.should eq( { jobs: 0, busy: 5.0, work: 9.0 } )
   end
 
-  it "prohibits recording endpoints out of order"
+  it "prohibits recording endpoints out of order" do
+    now = Time.at( 1330220626 )
+    subject.record_start( "a", time: now )
+    expect { subject.record_start( "b", time: now-0.1 ) }.to_not raise_exception
+    expect { subject.record_start( "c", time: now-1.1 ) }.to raise_exception
+    # c does not get started, so do not finish it
+    expect { subject.record_finish( "b", time: now+1 ) }.to_not raise_exception
+    expect { subject.record_finish( "a", time: now+1 ) }.to_not raise_exception
+    puts subject.sample.inspect
+    subject.sample.should eq( { jobs: 0, busy: 1.0, work: 2.0 } )
+  end
 
   it "can sample and update" do
     now = Time.at( 1330220626 )
