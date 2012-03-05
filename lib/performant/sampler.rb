@@ -36,5 +36,12 @@ class Sampler
     end
   end
 
+  def diff( sample2, sample1 )
+    jobs = (sample2[:jobs] || 0)
+    busy = (sample2[:busy] || 0) - (sample1[:busy] || 0)
+    work = (sample2[:work] || 0) - (sample1[:work] || 0)
+    return { jobs: jobs, busy: busy, work: work }
+  end
+
 end # Sampler
 end # Performant

@@ -1,0 +1,26 @@
+#!/usr/bin/env ruby
+
+require "optparse"
+require "ostruct"
+require "performant"
+
+my = OpenStruct.new env: "development", cfg: File.expand_path( "../example.yml", __FILE__ ), jobs: [ "stress", "fake" ]
+Performant::Configuration.load! src: my.cfg, env: my.env
+
+sampler      = Performant.sampler
+last_samples = Hash.new { { jobs: 0, busy: 0, work: 0 } }
+
+sampler.loop_until_false do
+  my.jobs.each do |job|
+
+    now         = Time.now
+    storage     = Performant.storage(job)
+    last_sample = last_samples[job]
+    now_sample  = storage.uninterruptedly { storage.tick! }
+    diff        = sampler.diff( now_sample, last_sample )
+    puts diff.merge( job: job, time: now ).inspect
+
+    last_samples[job] = now_sample
+  end
+  true
+end
