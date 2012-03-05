@@ -33,7 +33,7 @@ my.processes.times do
 end
 
 # Meanwhile, we can sample.
-s = Performant.storage.client("stress")
+s = Performant.storage.kind("stress")
 while Time.now < quit do
   sleep(1)
   puts s.sample!.inspect

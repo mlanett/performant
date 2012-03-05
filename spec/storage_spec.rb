@@ -3,7 +3,7 @@ require "helper"
 
 describe Performant::Storage, redis: true, redis_configuration: true do
 
-  subject { Performant.storage.client("test") }
+  subject { Performant.storage.kind("test") }
 
   it "should sample the counters" do
     subject.sample.should eq( { jobs: 0, busy: 0.0, work: 0.0 } )
