@@ -77,7 +77,7 @@ class Storage
       timeout   = options && options[:timeout] || 60
       time      = options && options[:time]    || Time.now
       time_ms   = to_ms( time )
-      expire_ms = to_ms( time + timeout ) # will not be exactly correct if time is adjusted by delta
+      expire_ms = to_ms( time + timeout ) # Will be correct even if time is adjusted by delta
 
       # Watch all keys we query and then execute changes in a multi/transaction, so we never make any change using stale data.
       with_watch( *all_keys ) do
