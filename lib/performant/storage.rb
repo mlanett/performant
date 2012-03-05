@@ -146,6 +146,10 @@ class Storage
       self
     end # record_finish
 
+    def nuke!
+      redis.del *all_keys
+    end
+
     protected
 
     # We calculate the difference between two times

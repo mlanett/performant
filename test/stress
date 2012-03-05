@@ -23,6 +23,18 @@ end.parse!(ARGV)
 Performant::Configuration.load( src: File.expand_path( "../performant.yml", __FILE__ ), env: "test" ).default!
 
 quit = Time.now + my.duration
+
+# launch a monitor first
+fork do
+  # Meanwhile, we can sample.
+  s = Performant.storage("stress")
+  s.nuke!
+  while Time.now < quit do
+    sleep(1)
+    puts s.sample!.inspect
+  end
+end
+
 my.processes.times do
   fork do
     monitor = Performant.monitor("stress")
@@ -30,13 +42,6 @@ my.processes.times do
       monitor.track() { sleep(rand) }
     end
   end
-end
-
-# Meanwhile, we can sample.
-s = Performant.storage.kind("stress")
-while Time.now < quit do
-  sleep(1)
-  puts s.sample!.inspect
 end
 
 Process.waitall

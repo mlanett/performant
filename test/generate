@@ -67,5 +67,6 @@ Performant::Configuration.load( src: File.expand_path( "../performant.yml", __FI
 monitor = Performant.monitor("fake")
 storage = Performant.storage("fake")
 
+storage.nuke!
 events = simulate()
 record( events, storage )
