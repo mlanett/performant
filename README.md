@@ -14,6 +14,8 @@ What is this good for? We can use these together with Little’s Law to derive t
 - Concurrency: divide the working time by the length of the interval.
 - Utilization: divide the busy time by the length of the interval.
 
+## Implementation
+
 How do we calculate this?
 
 An approach which works is to have each job execute two actions:
@@ -31,10 +33,10 @@ One problem with this approach is that start and finish actions must be balanced
 So relying on the job to execute the finish action is not robust.
 This is partly solved by the cleaner.
 
-At the same time we need two processes to run continuously.
+We need two standalone processes to run continuously.
 
 - Sampler:
-    The sampler reads the basic metrics and calculates the long-term average metrics.
+  - The sampler reads the basic metrics and calculates the long-term average metrics.
 - Cleaner:
   - The cleaner checks for jobs which died without executing finish actions.
   - It removes them from the running job set and performs the finish action for them.
@@ -72,22 +74,14 @@ The sampler captures the rollup values and writes them to Mongo:
 
 See also:
 http://www.mysqlperformanceblog.com/2011/04/27/the-four-fundamental-performance-metrics/
-http://www.mysqlperformanceblog.com/2011/05/05/the-two-even-more-fundamental-performance-metrics/
-
-Sampler daemon ideas:
-The sampler may/will need a specific configuration file.
-It will run from an installed gem.
-e.g. sampler -c ~/foo/bar/config.yml -e production COMMAND
-Pid and Log file location may be set in the config file.
-It might be better if the configuration file is self-executing, e.g.
-  ~/foo/bar/sampler -e production COMMAND
-It will need to support bundler, e.g.
-  ( cd ~/foo/bar; bundle exec sampler -e production COMMAND )
+and http://www.mysqlperformanceblog.com/2011/05/05/the-two-even-more-fundamental-performance-metrics/
 
 ## Out-of-order event arrival
+
 What if these two events arrive out of order? e.g. the A event arrives after the B event, even though it occurred first.
+
 Our strategy for handling these is to adjust the timestamp on the out-of-order event.
-This results in very small inaccuracies which are generally fine, and should cancel out.
+This results in very small inaccuracies which are generally fine, and may roughly cancel out.
 
 - A Start, B Start:   Ok; A's start moved to after B's start; some work time not recorded for A.
 - A Start, B Finish:  Same effect as above.
