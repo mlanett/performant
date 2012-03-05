@@ -5,10 +5,13 @@ require "performant"
 
 v = Performant::VERSION.split(".").map( &:to_i )
 v[2] = v[2] + 1
+v = v.join(".")
 
 vf = File.expand_path( "../../lib/performant/version.rb", __FILE__ )
 File.open(vf,"w") do |io|
   io.puts "module Performant"
-  io.puts "  VERSION = '#{v.join('.')}'"
+  io.puts "  VERSION = '#{v}'"
   io.puts "end"
 end
+
+puts "git ci -m 'Version bump to #{v}' #{vf}"
