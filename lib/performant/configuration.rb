@@ -78,6 +78,14 @@ class Configuration
     Configuration.new( ( yml["default"] || {} ).merge( yml[env] || {} ) )
   end
 
+  def self.load!( options )
+    load( options ).default!
+  end
+
+  def self.set!( options )
+    new( options ).default!
+  end
+
   # ----------------------------------------------------------------------------
   # Metaprogramming for client classes
   # ----------------------------------------------------------------------------

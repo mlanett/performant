@@ -20,7 +20,7 @@ optparse = OptionParser.new do |opts|
   opts.on( "-s", "--duration  NUM", "How long to test.")            { |s| my.duration  = s.to_i }
 end.parse!(ARGV)
 
-Performant::Configuration.load( src: File.expand_path( "../performant.yml", __FILE__ ), env: "test" ).default!
+Performant::Configuration.load! src: File.expand_path( "../performant.yml", __FILE__ ), env: "test"
 
 quit = Time.now + my.duration
 

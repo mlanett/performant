@@ -17,7 +17,7 @@ RSpec.configure do |spec|
   end
 
   spec.around( :each, redis_configuration: true ) do |example|
-    Performant::Configuration.new( redis: Performant::Test::RedisHelper::TEST_REDIS ).default!
+    Performant::Configuration.set! redis: Performant::Test::RedisHelper::TEST_REDIS
     example.call
   end
 
