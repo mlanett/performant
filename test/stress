@@ -29,9 +29,9 @@ fork do
   # Meanwhile, we can sample.
   s = Performant.storage("stress")
   s.nuke!
-  while Time.now < quit do
+  while Time.now < quit + 1 do
     sleep(1)
-    puts s.tick!.inspect
+    puts s.uninterruptedly { s.tick! }.inspect
   end
 end
 

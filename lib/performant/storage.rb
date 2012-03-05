@@ -150,6 +150,18 @@ class Storage
       redis.del *all_keys
     end
 
+    # returns false if we fail to execute the block before the timeout
+    def uninterruptedly( timeout = 1, &block )
+      expiration = Time.now + timeout
+      begin
+        return block.call
+      rescue Interrupted => x
+        return false if expiration < Time.now
+        sleep(0.015625)
+        retry
+      end
+    end # uninterruptedly
+
     protected
 
     # We calculate the difference between two times

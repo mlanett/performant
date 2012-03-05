@@ -23,14 +23,12 @@ class Monitor
     # returns the job id
     def start( time = Time.now )
       id = make_job_id( time )
-      storage.record_start( id, time: time )
-      # uninterruptedly {  }
+      storage.uninterruptedly { storage.record_start( id, time: time ) }
       return id
     end
 
     def finish( id, time = Time.now )
-      storage.record_finish( id, time: time )
-      # uninterruptedly {  }
+      storage.uninterruptedly { storage.record_finish( id, time: time ) }
     end
 
     def track( kind = "test", timeout = 60, &block )
@@ -45,18 +43,6 @@ class Monitor
     #
     protected
     #
-
-    # returns false if we fail to execute the block before the timeout
-    def uninterruptedly( timeout = 1, &block )
-      expiration = Time.now + timeout
-      begin
-        return block.call
-      rescue Storage::Interrupted => x
-        return false if expiration < Time.now
-        sleep(0.015625)
-        retry
-      end
-    end # uninterruptedly
 
     def make_job_id( time = Time.now )
       @hostname ||= `hostname`.chomp
