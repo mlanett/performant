@@ -3,7 +3,7 @@
 require "bundler/setup"
 require "performant"
 
-Performant::Configuration.load! src: File.expand_path( "../performant.yml", __FILE__ ), env: "development"
+Performant::Configuration.load! src: File.expand_path( "../example.yml", __FILE__ ), env: "development"
 
 def some_job
   case x=rand
