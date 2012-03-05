@@ -19,6 +19,13 @@ describe Performant::Storage, redis: true, redis_configuration: true do
     subject.sample[:jobs].should eq( 1 )
   end
 
+  it "should handle repeated start events" do
+    now = Time.at( 1330220626 )
+    subject.record_start( "a", time: now )
+    subject.record_start( "a", time: now+1 )
+    subject.sample[:jobs].should eq( 1 )
+  end
+
   it "should record one operation" do
     now = Time.at( 1330220626 )
     subject.record_start( "a", time: now )
