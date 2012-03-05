@@ -39,7 +39,8 @@ my.processes.times do
   fork do
     monitor = Performant.monitor("stress")
     while Time.now < quit do
-      monitor.track() { sleep(rand) }
+      monitor.track() { sleep(rand) } # working time
+      sleep(rand)                     # unproductive time
     end
   end
 end
