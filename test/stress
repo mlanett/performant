@@ -25,7 +25,7 @@ Performant::Configuration.load( src: File.expand_path( "../performant.yml", __FI
 quit = Time.now + my.duration
 my.processes.times do
   fork do
-    monitor = Performant.monitor
+    monitor = Performant.monitor("stress")
     while Time.now < quit do
       monitor.track() { sleep(rand) }
     end

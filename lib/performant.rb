@@ -10,13 +10,13 @@ module Performant
   class << self
 
     # @returns a Monitor initialized from the default Configuration
-    def monitor
-      Configuration.default.monitor
+    def monitor( kind )
+      Configuration.default.monitor.kind(kind)
     end
 
     # @returns a Storage initialized from the default Configuration
-    def storage
-      Configuration.default.storage
+    def storage( kind )
+      Configuration.default.storage.kind(kind)
     end
 
   end # class

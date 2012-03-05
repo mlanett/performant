@@ -64,8 +64,8 @@ def record( events, storage )
 end
 
 Performant::Configuration.load( src: File.expand_path( "../performant.yml", __FILE__ ), env: "test" ).default!
-monitor = Performant.monitor
-storage = Performant.storage.kind("fake")
+monitor = Performant.monitor("fake")
+storage = Performant.storage("fake")
 
 events = simulate()
 record( events, storage )
