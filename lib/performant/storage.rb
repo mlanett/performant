@@ -37,7 +37,7 @@ class Storage
 
         operations = redis.zcard( jobs_key )
         last_ms    = redis.get( last_key ).to_i
-        diff_ms    = delta( time_ms, last_ms )
+        time_ms,diff_ms = delta( time_ms, last_ms )
 
         result = if operations > 0 then
           # Increment time consumed by current jobs.
@@ -77,7 +77,7 @@ class Storage
       timeout   = options && options[:timeout] || 60
       time      = options && options[:time]    || Time.now
       time_ms   = to_ms( time )
-      expire_ms = to_ms( time + timeout ) # will not be exactly correct if time is adjusted for delta
+      expire_ms = to_ms( time + timeout ) # will not be exactly correct if time is adjusted by delta
 
       # Watch all keys we query and then execute changes in a multi/transaction, so we never make any change using stale data.
       with_watch( *all_keys ) do
@@ -130,8 +130,8 @@ class Storage
 
         operations = redis.zcard( jobs_key )
         last_ms    = redis.get( last_key ).to_i
-        diff_ms    = delta( time_ms, last_ms )
         has_job    = ! redis.zrank( jobs_key, id ).nil?
+        time_ms,diff_ms = delta( time_ms, last_ms )
 
         raise NoSuchJob.new(id) if ! has_job
 
