@@ -133,7 +133,7 @@ class Storage
         diff_ms    = delta( time_ms, last_ms )
         has_job    = ! redis.zrank( jobs_key, id ).nil?
 
-        raise NoSuchJob, "Job is not running" if ! has_job
+        raise NoSuchJob.new(id) if ! has_job
 
         multi(4) do |r|
           r.incrby( busy_key, diff_ms )
@@ -181,7 +181,7 @@ class Storage
     def multi( count, &block )
       result = redis.multi(&block)
       raise BusyTryAgain if ! result
-      raise Corruption, "Unexpected Result Count #{result.size}" if result.size != count
+      raise UnexpectedResults.new(result.size.to_s) if result.size != count
       result
     end
 
@@ -226,7 +226,7 @@ class Storage
   class BusyTryAgain < StandardError; end
   class OutOfOrder < StandardError; end
   class NoSuchJob < Exception; end
-  class Corruption < Exception; end
+  class UnexpectedResults < Exception; end
 
 end # Storage
 end # Performant
