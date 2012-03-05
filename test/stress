@@ -31,7 +31,7 @@ fork do
   s.nuke!
   while Time.now < quit do
     sleep(1)
-    puts s.sample!.inspect
+    puts s.tick!.inspect
   end
 end
 

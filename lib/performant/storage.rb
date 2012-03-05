@@ -30,7 +30,7 @@ class Storage
     end
 
     # Updates the busy and work values
-    def sample!( time = Time.now )
+    def tick!( time = Time.now )
       time_ms = to_ms( time )
 
       with_watch( *all_keys ) do
@@ -65,7 +65,7 @@ class Storage
 
         return { jobs: operations, busy: (result[0].to_i / 1000.0), work: (result[1].to_i / 1000.0) }
       end # watch
-    end # sample!
+    end # tick!
 
     # This is a transactional operation - it may fail if it co-executes with another transaction.
     # If the given job is already running, the timeout is extended.
