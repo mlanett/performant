@@ -164,7 +164,13 @@ class Storage
     protected
 
     # We calculate the difference between two times
-    # Negative durations are not permitted, so we accept some slop, returning last time as now time
+    # @param now is assumed to be approximately Time.now
+    # @param last is some pre-recorded timestamp, which should be in the past.
+    # In some cases, due to out-of-order executions, last may be *after* time.
+    # We can't process negative durations, so we:
+    # => adjust the duration to be 0.
+    # => return the last time as the new "now" time.
+    # This has the effect of moving the out-of-order timepoint ahead slightly, which is generally Ok.
     # @returns 0 if the duration is small
     # @raises OutOfOrder.new(diff_ms.to_s) if diff_ms < 0
     def delta( now, last, limit = -1000 )

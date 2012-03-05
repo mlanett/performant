@@ -75,3 +75,12 @@ It might be better if the configuration file is self-executing, e.g.
   ~/foo/bar/sampler -e production COMMAND
 It will need to support bundler, e.g.
   ( cd ~/foo/bar; bundle exec sampler -e production COMMAND )
+
+= Out-of-order event arrival
+What if these two events arrive out of order? e.g. the A event arrives after the B event, even though it occurred first.
+Our strategy for handling these is to adjust the timestamp on the out-of-order event.
+This results in very small inaccuracies which are generally fine, and should cancel out.
+A Start, B Start:   Ok; A's start moved to after B's start; some work time not recorded for A.
+A Start, B Finish:  Same effect as above.
+A Finish, B Start:  Ok; A's finish moved to after B's start; some extra work time recorded for A.
+A Finish, B Finish: Same effect as above.
