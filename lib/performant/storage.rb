@@ -37,9 +37,7 @@ class Storage
 
         operations = redis.zcard( jobs_key )
         last_ms    = redis.get( last_key ).to_i
-        diff_ms    = time_ms - last_ms
-
-        raise OutOfOrder.new(diff_ms.to_s) if diff_ms < 0
+        diff_ms    = delta( time_ms, last_ms )
 
         result = if operations > 0 then
           # Increment time consumed by current jobs.
@@ -69,9 +67,8 @@ class Storage
       end # watch
     end # sample!
 
-    # this is a transactional operation - it can fail
+    # This is a transactional operation - it may fail if it co-executes with another transaction.
     # If the given job is already running, the timeout is extended.
-    # XXX some operations may occur out of order
     # @option timeout in seconds defaults to 60
     # @option time should be now, but may be given for testing purposes
     # @raises an exception if this job is already running
@@ -80,17 +77,15 @@ class Storage
       timeout   = options && options[:timeout] || 60
       time      = options && options[:time]    || Time.now
       time_ms   = to_ms( time )
-      expire_ms = to_ms( time + timeout )
+      expire_ms = to_ms( time + timeout ) # will not be exactly correct if time is adjusted for delta
 
       # Watch all keys we query and then execute changes in a multi/transaction, so we never make any change using stale data.
       with_watch( *all_keys ) do
 
         operations = redis.zcard( jobs_key )
         last_ms    = redis.get( last_key ).to_i
-        diff_ms    = time_ms - last_ms
         has_job    = ! redis.zrank( jobs_key, id ).nil?
-
-        raise OutOfOrder.new(diff_ms.to_s) if diff_ms < 0
+        time_ms,diff_ms = delta( time_ms, last_ms )
 
         if has_job then
           # This job is already running?! Not expected. But could happen.
@@ -135,11 +130,10 @@ class Storage
 
         operations = redis.zcard( jobs_key )
         last_ms    = redis.get( last_key ).to_i
-        diff_ms    = time_ms - last_ms
+        diff_ms    = delta( time_ms, last_ms )
         has_job    = ! redis.zrank( jobs_key, id ).nil?
 
         raise NoSuchJob, "Job is not running" if ! has_job
-        raise OutOfOrder.new(diff_ms.to_s) if diff_ms < 0
 
         multi(4) do |r|
           r.incrby( busy_key, diff_ms )
@@ -168,6 +162,17 @@ class Storage
     end
 
     protected
+
+    # We calculate the difference between two times
+    # Negative durations are not permitted, so we accept some slop, returning last time as now time
+    # @returns 0 if the duration is small
+    # @raises OutOfOrder.new(diff_ms.to_s) if diff_ms < 0
+    def delta( now, last, limit = -1000 )
+      diff = now - last
+      return [ now, diff ] if diff >= 0
+      raise OutOfOrder.new((-diff).to_s) if diff < limit
+      return [ last, 0 ]
+    end
 
     def to_ms( time )
       (time.to_f * 1000).to_i
