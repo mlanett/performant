@@ -175,7 +175,7 @@ class Storage
     end
 
     def to_ms( time )
-      (time.to_f * 1000).to_i
+      (1000 * time.to_r).to_i
     end
 
     def multi( count, &block )
