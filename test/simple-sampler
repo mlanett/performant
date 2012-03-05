@@ -1,0 +1,20 @@
+#!/usr/bin/env ruby
+
+require "optparse"
+require "ostruct"
+require "performant"
+
+my = OpenStruct.new env: "development", cfg: File.expand_path( "../example.yml", __FILE__ ), jobs: [ "stress", "fake" ]
+Performant::Configuration.load! src: my.cfg, env: my.env
+
+sampler = Performant.sampler
+samples = {}
+
+sampler.loop_until_false do
+  my.jobs.each do |job|
+    storage = Performant.storage(job)
+    sample = storage.uninterruptedly { storage.tick! }
+    puts sample.merge( job: job ).inspect
+  end
+  true
+end

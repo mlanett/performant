@@ -47,12 +47,16 @@ class Configuration
   # Factory methods
   # ----------------------------------------------------------------------------
 
-  def storage
-    configured Storage.new
-  end
-
   def monitor
     configured Monitor.new
+  end
+
+  def sampler
+    configured Sampler.new
+  end
+
+  def storage
+    configured Storage.new
   end
 
   # ----------------------------------------------------------------------------

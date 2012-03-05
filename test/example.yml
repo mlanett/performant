@@ -1,7 +1,7 @@
 # this file supports ERB
 
 default:
-  interval_size:  60
+  interval_size:  10
   redis:
     url:          redis://127.0.0.1:6379/0
   mongo:
