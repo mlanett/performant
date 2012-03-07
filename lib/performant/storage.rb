@@ -6,17 +6,17 @@ class Storage
 
   include Configuration::Configurable
 
-  def kind( kind )
-    Client.new( redis, kind )
+  def job( job )
+    Client.new( redis, job )
   end
 
   class Client
 
     attr :redis
 
-    def initialize( redis, kind )
+    def initialize( redis, job )
       @redis  = redis
-      @prefix = "performant:#{kind}"
+      @prefix = "performant:#{job}"
     end
 
     def sample

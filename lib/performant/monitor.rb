@@ -6,17 +6,17 @@ class Monitor
 
   include Configuration::Configurable
 
-  def kind( kind )
-    Client.new( storage(kind), kind )
+  def job( job )
+    Client.new( storage(job), job )
   end
 
   class Client
 
     attr :storage
 
-    def initialize( storage, kind )
+    def initialize( storage, job )
       @storage = storage
-      @kind    = kind
+      @job    = job
     end
 
     def track( &block )
@@ -46,15 +46,15 @@ class Monitor
 
     def make_job_id( time = Time.now )
       @hostname ||= `hostname`.chomp
-      "%s@%s:%d:%s:%s:%f" % [ @kind, @hostname, Process.pid, Thread.current.object_id.to_s(36), Fiber.current.object_id.to_s(36), time.to_f ]
+      "%s@%s:%d:%s:%s:%f" % [ @job, @hostname, Process.pid, Thread.current.object_id.to_s(36), Fiber.current.object_id.to_s(36), time.to_f ]
     end
 
   end # Client
 
   protected
 
-  def storage( kind )
-    configuration.storage.kind(kind)
+  def storage( job )
+    configuration.storage.job(job)
   end
 
 end # Monitor

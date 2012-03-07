@@ -11,8 +11,8 @@ module Performant
   class << self
 
     # @returns a Monitor initialized from the default Configuration
-    def monitor( kind )
-      Configuration.default.monitor.kind(kind)
+    def monitor( job )
+      Configuration.default.monitor.job(job)
     end
 
     # @returns a Sampler initialized from the default Configuration
@@ -21,8 +21,8 @@ module Performant
     end
 
     # @returns a Storage initialized from the default Configuration
-    def storage( kind )
-      Configuration.default.storage.kind(kind)
+    def storage( job )
+      Configuration.default.storage.job(job)
     end
 
   end # class

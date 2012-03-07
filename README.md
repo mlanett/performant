@@ -56,11 +56,11 @@ Special cases we have to support:
 
 Performant records high-volume data in Redis:
 
-- Performant:Kinds              < Set < Kind > >
-- Performant:{Kind}:Running     < SortedSet < Job ID scored by Expire time > >
-- Performant:{Kind}:Busy Time   < int(ms) >
-- Performant:{Kind}:Work Time   < int(ms) >
-- Performant:{Kind}:Last Tick   < int(ms) >
+- Performant:Jobs              < Set < Job > >
+- Performant:{Job}:Running     < SortedSet < Job ID scored by Expire time > >
+- Performant:{Job}:Busy Time   < int(ms) >
+- Performant:{Job}:Work Time   < int(ms) >
+- Performant:{Job}:Last Tick   < int(ms) >
 
 Timestamps and durations are stored as integers in milliseconds.
 

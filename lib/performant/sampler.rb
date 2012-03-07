@@ -6,6 +6,10 @@ class Sampler
 
   include Configuration::Configurable
 
+  def initialize( jobs )
+    @jobs = jobs
+  end
+
   def sample( interval )
     # read current totals from redis
     # calculate deltas since last time
