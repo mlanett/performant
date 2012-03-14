@@ -21,6 +21,7 @@ describe Redis, redis: true, redis_configuration: true do
     redis.zadd "foo", 1, "a"
     redis.zadd "foo", 2, "b"
     redis.zadd "foo", 3, "c"
+    redis.zadd "foo", 4, "d"
     # inclusive by default http://redis.io/commands/zrangebyscore
     redis.zrangebyscore( "foo", "-inf", 2 ).should eq(["a","b"])
     redis.zrangebyscore( "foo", "-inf", 2, limit: [0,1] ).should eq(["a"])

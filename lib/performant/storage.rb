@@ -151,9 +151,26 @@ class Storage
     end
 
     # returns a list of expired jobs
-    def expired_jobs( now = Time.now )
-      now_ms = to_ms( now )
-      operations = redis.zrangebyscore( jobs_key, "-inf", now_ms )
+    # is limited to 10
+    def expired_jobs( options = nil )
+      time    = options && options[:time] || Time.now
+      time_ms = to_ms( time )
+      operations = redis.zrangebyscore( jobs_key, "-inf", time_ms, limit: [0,10] )
+    end
+
+    def expire_jobs( options = nil )
+      count   = 0
+      time    = options && options[:time] || Time.now
+      time_ms = to_ms( time )
+      loop do
+        operations = expired_jobs( time: time )
+        break if operations.size == 0
+        operations.each do |id|
+          record_finish( id, time: time )
+          count += 1
+        end
+      end
+      count
     end
 
     # returns false if we fail to execute the block before the timeout

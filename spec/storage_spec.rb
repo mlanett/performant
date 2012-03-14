@@ -81,7 +81,18 @@ describe Performant::Storage, redis: true, redis_configuration: true do
     subject.record_start  "c", time: now, timeout: 20
     subject.record_finish "b", time: now+1
     now += 15
-    subject.expired_jobs(now).should eq(["a"])
+    subject.expired_jobs( time: now ).should eq(["a"])
+  end
+
+  it "can expire jobs" do
+    now = Time.at 1000000000
+    subject.record_start  "a", time: now, timeout: 10
+    subject.record_start  "b", time: now, timeout: 50
+
+    subject.expire_jobs( time: now+20 ).should == 1
+
+    expect { subject.record_finish "a", time: now+30 }.to raise_exception
+    subject.record_finish "b", time: now+40
   end
 
 end
