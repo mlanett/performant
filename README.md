@@ -58,6 +58,7 @@ Performant records high-volume data in Redis:
 
 - Performant:Jobs              < Set < Job > >
 - Performant:{Job}:Running     < SortedSet < Job ID scored by Expire time > >
+- Performant:{Job}:Starts      < int >
 - Performant:{Job}:Busy Time   < int(ms) >
 - Performant:{Job}:Work Time   < int(ms) >
 - Performant:{Job}:Last Tick   < int(ms) >

@@ -20,6 +20,7 @@ class Storage
     end
 
     def sample
+      # this isn't a transaction, just a bulk read operation
       result = redis.multi do |r|
         r.zcard( jobs_key )
         r.get( busy_key )
