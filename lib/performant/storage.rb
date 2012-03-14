@@ -150,6 +150,12 @@ class Storage
       redis.del *all_keys
     end
 
+    # returns a list of expired jobs
+    def expired_jobs( now = Time.now )
+      now_ms = to_ms( now )
+      operations = redis.zrangebyscore( jobs_key, "-inf", now_ms )
+    end
+
     # returns false if we fail to execute the block before the timeout
     def uninterruptedly( timeout = 1, &block )
       expiration = Time.now + timeout

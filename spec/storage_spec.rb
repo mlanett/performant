@@ -74,4 +74,14 @@ describe Performant::Storage, redis: true, redis_configuration: true do
     subject.tick!( now+3 ).should eq( { jobs: 0, busy: 2.0, work: 2.0 } )
   end
 
+  it "can show expired jobs" do
+    now = Time.at 1000000000
+    subject.record_start  "a", time: now, timeout: 10
+    subject.record_start  "b", time: now, timeout: 20
+    subject.record_start  "c", time: now, timeout: 20
+    subject.record_finish "b", time: now+1
+    now += 15
+    subject.expired_jobs(now).should eq(["a"])
+  end
+
 end
