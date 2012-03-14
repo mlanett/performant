@@ -131,9 +131,9 @@ class Storage
         operations = redis.zcard( jobs_key )
         last_ms    = redis.get( last_key ).to_i
         has_job    = ! redis.zrank( jobs_key, id ).nil?
+        raise NoSuchJob.new(id) if ! has_job
         time_ms,diff_ms = reorder( time_ms, last_ms )
 
-        raise NoSuchJob.new(id) if ! has_job
 
         multi(4) do |r|
           r.incrby( busy_key, diff_ms )
