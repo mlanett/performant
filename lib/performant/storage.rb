@@ -43,7 +43,7 @@ class Storage
           # Increment time consumed by current jobs.
           # And fetch the cumulative work values.
 
-          multi(5) do |r|
+          multi( "busy tick", 5 ) do |r|
             r.incrby( busy_key, diff_ms )
             r.incrby( work_key, diff_ms * operations )
             r.set( last_key, time_ms )
@@ -55,7 +55,7 @@ class Storage
 
           # Nothing is running, just update the timestamp.
           # And fetch the cumulative work values.
-          multi(3) do |r|
+          multi( "quiet tick", 3 ) do |r|
             r.set( last_key, time_ms )
             r.get( busy_key )
             r.get( work_key )
@@ -92,7 +92,7 @@ class Storage
           # Reset expiration.
           # No need to increment work counters since operation count hasn't changed.
 
-          multi(1) do |r|
+          multi( "re-start #{id}", 1 ) do |r|
             r.zadd( jobs_key, expire_ms, id )
           end
 
@@ -101,7 +101,7 @@ class Storage
           # Increment time consumed by current jobs.
           # Add this job.
 
-          multi(4) do |r|
+          multi( "start more #{id}", 4 ) do |r|
             r.incrby( busy_key, diff_ms )
             r.incrby( work_key, diff_ms * operations )
             r.set( last_key, time_ms )
@@ -112,7 +112,7 @@ class Storage
           # No jobs are running.
           # Add this job.
 
-          multi(2) do |r|
+          multi( "start #{id}", 2 ) do |r|
             r.set( last_key, time_ms )
             r.zadd( jobs_key, expire_ms, id )
           end
@@ -135,7 +135,7 @@ class Storage
         time_ms,diff_ms = reorder( time_ms, last_ms )
 
 
-        multi(4) do |r|
+        multi( "finish #{id}", 4) do |r|
           r.incrby( busy_key, diff_ms )
           r.incrby( work_key, diff_ms * operations )
           r.set( last_key, time_ms )
@@ -191,7 +191,7 @@ class Storage
       (1000 * time.to_r).to_i
     end
 
-    def multi( count, &block )
+    def multi( what, count, &block )
       result = redis.multi(&block)
       raise Interrupted if ! result
       raise UnexpectedResults.new(result.size.to_s) if result.size != count
