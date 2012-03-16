@@ -33,6 +33,12 @@ describe Performant::Configuration do
       c.redis.should be_instance_of(Redis)
     end
 
+    it "can merge defaults deeply" do
+      c = Performant::Configuration.load src: File.expand_path( "../spec_nested.yml", __FILE__ ), env: "test"
+      c.mongos["hosts"].should_not be_nil
+      c.mongos["database"].should_not be_nil
+    end
+
   end # factory
 
   describe "buckets" do

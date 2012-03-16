@@ -13,6 +13,7 @@ class Configuration
     options  = Hash[ options.map { |k,v| [ k.to_sym, v ] } ].freeze # poor man's symbolize keys
     @interval_size = options[:interval_size] || 60
     @redis_options = options[:redis] || { url: "redis://127.0.0.1:6379/0" }
+    @mongos        = options[:mongo]
   end
 
   # @returns a range containing the start and finish endpoints; this is a non-inclusive interval
@@ -41,6 +42,10 @@ class Configuration
 
   def redis
     redis_options ? Redis.connect( redis_options ) : Redis.connect
+  end
+
+  def mongos
+    @mongos
   end
 
   # ----------------------------------------------------------------------------
@@ -79,7 +84,8 @@ class Configuration
     src = options[:src] || "#{ENV['RACK_ROOT']}/config/performant.yml"
     env = options[:env] || ENV["RACK_ENV"]
     yml = YAML.load( ERB.new( IO.read( src ) ).result )
-    Configuration.new( ( yml["default"] || {} ).merge( yml[env] || {} ) )
+    uni = rmerge( ( yml["default"] || {} ), ( yml[env] || {} ) )
+    Configuration.new( uni )
   end
 
   def self.load!( options )
@@ -120,6 +126,14 @@ class Configuration
   def configured( thing )
     thing.configuration = self
     return thing
+  end
+
+  # merges hashes recursively
+  def self.rmerge( hold, hadd )
+    m = {}
+    hold.merge( hadd )  do | key, old_val, add_val |
+      m[key] = ( Hash === old_val && Hash === add_val ) ? rmerge( old_val, add_val ) : add_val
+    end
   end
 
 end # Configuration
