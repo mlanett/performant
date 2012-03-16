@@ -2,5 +2,7 @@
 require "helper"
 
 describe "Performant::Cleaner" do
-  it "should have tests"
+
+  it "should expire dead jobs"
+
 end
