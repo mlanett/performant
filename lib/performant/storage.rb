@@ -175,7 +175,7 @@ class Storage
     end
 
     # returns false if we fail to execute the block before the timeout
-    def uninterruptedly( timeout = 1, &block )
+    def robustly( timeout = 1, &block )
       expiration = Time.now + timeout
       begin
         return block.call
@@ -184,7 +184,7 @@ class Storage
         sleep(0.015625)
         retry
       end
-    end # uninterruptedly
+    end # robustly
 
     protected
 

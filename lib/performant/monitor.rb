@@ -32,12 +32,12 @@ class Monitor
     # returns the job id
     def start( time = Time.now )
       id = make_job_id( time )
-      storage.uninterruptedly { storage.record_start( id, time: time ) }
+      storage.robustly { storage.record_start( id, time: time ) }
       return id
     end
 
     def finish( id, time = Time.now )
-      storage.uninterruptedly { storage.record_finish( id, time: time ) }
+      storage.robustly { storage.record_finish( id, time: time ) }
     end
 
     #
