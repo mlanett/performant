@@ -16,15 +16,17 @@ class Task
     attr_accessor long_name
   end
 
-  def initialize( argv )
-    self.class.options.each { |o| self.send("#{o.long_name}=", o.default) if o.default }
+  def self.parse( argv )
+    me = new
+    self.options.each { |o| me.send("#{o.long_name}=", o.default) if o.default }
     OptionParser.new do |opts|
       opts.banner = "Usage: #{__FILE__} [options]*"
       opts.on( "-h", "--help", "Display this usage summary." ) { puts opts; exit }
-      self.class.options.each do |o|
-        opts.on( "-#{o.short_option}", "--#{o.long_name} VAL", "How many #{o.long_name}.") { |s| self.send("#{o.long_name}=",s.to_i) }
+      self.options.each do |o|
+        opts.on( "-#{o.short_option}", "--#{o.long_name} VAL", "How many #{o.long_name}.") { |s| me.send("#{o.long_name}=",s.to_i) }
       end
     end.parse!( argv )
+    me
   end
 
 end # Task

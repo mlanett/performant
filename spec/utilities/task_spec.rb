@@ -13,8 +13,8 @@ end
 describe Performant::Utilities::Task do
 
   it "should allow multiple subclasses" do
-    A.new( ["-p", "1"] ).processes.should eq(1)
-    B.new( [] ).processes.should eq(3)
+    A.parse( ["-p", "1"] ).processes.should eq(1)
+    B.parse( [] ).processes.should eq(3)
   end
 
 end
