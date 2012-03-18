@@ -13,7 +13,7 @@ class Sampler < Performant::Utilities::Task
   option "j", "jobs"
 
   def run
-    Performant::Configuration.load! src: self.config, env: self.environment
+    Performant::Configuration.load! src: config, env: environment
 
     self.jobs ||= [ "stress", "fake" ]
 
@@ -23,7 +23,7 @@ class Sampler < Performant::Utilities::Task
     sampler.loop_until_false do
 
       puts Time.now
-      my.jobs.each do |job|
+      jobs.each do |job|
 
         storage     = Performant.storage(job)
         last_sample = sec_samples[job]
