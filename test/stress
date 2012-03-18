@@ -1,9 +1,10 @@
 #!/usr/bin/env ruby
 # -*- encoding: utf-8 -*-
+
 require "bundler/setup"
-require "optparse"
-require "ostruct"
+
 require "performant"
+require "performant/utilities/task"
 
 # 10 processes
 # 10 seconds
@@ -11,38 +12,40 @@ require "performant"
 # count failures (false)
 # count errors
 
-my = OpenStruct.new processes: 10, duration: 10
+class Stress < Performant::Utilities::Task
 
-optparse = OptionParser.new do |opts|
-  opts.banner = "Usage: #{__FILE__} [options]*"
-  opts.on( "-h", "--help",          "Display this usage summary." ) { puts opts; exit }
-  opts.on( "-p", "--processes NUM", "How many processes.")          { |s| my.processes = s.to_i }
-  opts.on( "-s", "--duration  NUM", "How long to test.")            { |s| my.duration  = s.to_i }
-end.parse!(ARGV)
+  option "p", :processes, default: 10
+  option "d", :duration,  default: 10
 
-Performant::Configuration.load! src: File.expand_path( "../example.yml", __FILE__ ), env: "test"
+  def run
 
-quit = Time.now + my.duration
+    Performant::Configuration.load! src: File.expand_path( "../example.yml", __FILE__ ), env: "test"
 
-# launch a monitor first
-fork do
-  # Meanwhile, we can sample.
-  s = Performant.storage("stress")
-  s.nuke!
-  while Time.now < quit + 1 do
-    sleep(1)
-    puts s.uninterruptedly { s.tick! }.inspect
-  end
-end
+    quit = Time.now + duration
 
-my.processes.times do
-  fork do
-    monitor = Performant.monitor("stress")
-    while Time.now < quit do
-      monitor.track() { sleep(rand) } # working time
-      sleep(rand)                     # unproductive time
+    # launch a monitor first
+    fork do
+      s = Performant.storage("stress")
+      s.nuke!
+      while Time.now < quit + 1 do
+        sleep(1)
+        puts s.robustly { s.tick! }.inspect
+      end
     end
+
+    processes.times do
+      fork do
+        monitor = Performant.monitor("stress")
+        while Time.now < quit do
+          monitor.track() { sleep(rand) } # working time
+          sleep(rand)                     # unproductive time
+        end
+      end
+    end
+
+    Process.waitall
   end
+
 end
 
-Process.waitall
+Stress.parse(ARGV).run

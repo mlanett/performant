@@ -1,72 +1,44 @@
 #!/usr/bin/env ruby
+# -*- encoding: utf-8 -*-
 
 require "bundler/setup"
+
 require "performant"
+require "performant/utilities/task"
+require "performant/utilities/bells"
 
-# generate 3+e days of data
-# for each day, generate data on a bell curve
+class Generator < Performant::Utilities::Task
 
-DAY   = 86400
-NUM   = 10000 # per day
-LEN_s = 10   # max for each event
+  DAY = 86400
 
-def normal
-  ( rand + rand + rand + rand + rand + rand + rand + rand ) / 8.0
-end
+  option "p", :processes, default: 100_000, explain: "Processes per cycle"
+  option "d", :days,      default: 2
+  option "t", :duration,  default: 30,      explain: "Duration of a single process"
+  option "D", :day,       default: 86_400,  explain: "Length of a single day"
 
-def event( day )
-  # create a single event in day
-  # events will cluster around mid-day
-  # events will also get longer around mid-day
-  inday  = normal # 0.0...1.0 with 0.5 == mid-day
-  busy   = 2 * ( inday > 0.5 ? 1 - inday : inday ) # 0.0 least to 1.0 max
-  start  = day + DAY * inday
-  finish = start + normal * LEN_s * busy
-  ( start ... finish )
-end
+  def rand
+    @rand ||= Performant::Utilities::Bells.new
+    @rand.rand
+  end
 
-def simulate()
-  events = []
-  # generate 100000 events
-  now = Time.now
-  mid = Time.at( now.to_i - now.to_i % DAY )
-  day = mid - 3 * DAY
-  nid = 1
+  def run
+    # distribute p processes over each of d days.
+    # the activity level for a day peaks in the middle
+    
+    events = []
 
-  while day < now do
-    puts "Simulating #{day}"
-    NUM.times do
-      id   = nid.to_s
-      nid += 1
-      sf   = event( day )
-      # disregard anything after now
-      if sf.last < now then
-        events << [ id, :start, sf.first ]
-        events << [ id, :finish, sf.last ]
+    (0...days).each do |day|
+      processes.times do
+        t = ( rand + day ) * DAY
+        d = duration * rand # TODO use long tail distribution
+        events << [ t.to_i, d.to_i ]
       end
     end
-    day += DAY
+
+    events = events.sort_by { |i| i.first }
+    events.each { |i| printf "%i,%i\n", i.first, i.last }
   end
 
-  puts "Sorting"
-  events.sort_by { |e| e.last }
-end
+end # Generator
 
-def record( events, storage )
-  puts "Recording"
-  events.each do |event|
-    if event[1] == :start
-      storage.record_start( event[0], time: event[2] )
-    else
-      storage.record_finish( event[0], time: event[2] )
-    end
-  end
-end
-
-Performant::Configuration.load! src: File.expand_path( "../example.yml", __FILE__ ), env: "test"
-monitor = Performant.monitor("fake")
-storage = Performant.storage("fake")
-
-storage.nuke!
-events = simulate()
-record( events, storage )
+Generator.parse(ARGV).run if __FILE__ == $0

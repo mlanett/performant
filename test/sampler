@@ -1,27 +1,41 @@
 #!/usr/bin/env ruby
+# -*- encoding: utf-8 -*-
 
-require "optparse"
-require "ostruct"
+require "bundler/setup"
+
 require "performant"
+require "performant/utilities/task"
 
-my = OpenStruct.new env: "development", cfg: File.expand_path( "../example.yml", __FILE__ ), jobs: [ "stress", "fake" ]
-Performant::Configuration.load! src: my.cfg, env: my.env
+class Sampler < Performant::Utilities::Task
 
-sampler     = Performant.sampler
-sec_samples = Hash.new { { jobs: 0, busy: 0, work: 0 } }
+  option "e", "environment",  default: "development"
+  option "c", "config",       default: File.expand_path( "../example.yml", __FILE__ )
+  option "j", "jobs"
 
-sampler.loop_until_false do
+  def run
+    Performant::Configuration.load! src: self.config, env: self.environment
 
-  puts Time.now
-  my.jobs.each do |job|
+    self.jobs ||= [ "stress", "fake" ]
 
-    storage     = Performant.storage(job)
-    last_sample = sec_samples[job]
-    now_sample  = storage.uninterruptedly { storage.tick! }
-    diff        = sampler.diff( now_sample, last_sample )
-    puts diff.merge( job: job ).inspect
+    sampler     = Performant.sampler
+    sec_samples = Hash.new { { jobs: 0, busy: 0, work: 0 } }
 
-    sec_samples[job] = now_sample
+    sampler.loop_until_false do
+
+      puts Time.now
+      my.jobs.each do |job|
+
+        storage     = Performant.storage(job)
+        last_sample = sec_samples[job]
+        now_sample  = storage.robustly { storage.tick! }
+        diff        = sampler.diff( now_sample, last_sample )
+        puts diff.merge( job: job ).inspect
+
+        sec_samples[job] = now_sample
+      end
+      true
+    end
   end
-  true
 end
+
+Sampler.parse(ARGV).run if __FILE__ == $0
