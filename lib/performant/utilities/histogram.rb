@@ -15,11 +15,11 @@ class Histogram
     num = @num || [ Math.sqrt( numbers.size ).floor, 3 ].max
     min = @min || numbers.min
     max = @max || numbers.max
-    len = ( max - min ) / num
+    run = ( max - min ) / num
 
     bins = Array.new( num ) { 0 }
     numbers.each do |n|
-      b = [ [ (n - min) / len, 0 ].max, num-1 ].min
+      b = [ [ ( (n - min) / run ).floor, 0 ].max, num-1 ].min
       bins[b] += 1
     end
     bins
@@ -28,6 +28,3 @@ class Histogram
 end # Histogram
 end # Utilities
 end # Performant
-
-
-
