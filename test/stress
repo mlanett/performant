@@ -14,36 +14,48 @@ require "performant/utilities/task"
 
 class Stress < Performant::Utilities::Task
 
-  option "p", :processes, default: 10
-  option "d", :duration,  default: 10
+  option "f", :factor, default: 10
 
   def run
-
     Performant::Configuration.load! src: File.expand_path( "../example.yml", __FILE__ ), env: "test"
 
-    quit = Time.now + duration
+    lines = ARGF.readlines
+    tds   = lines.map { |line| line.split(",").map { |s| s.to_i } }
 
-    # launch a monitor first
-    fork do
-      s = Performant.storage("stress")
-      s.nuke!
-      while Time.now < quit + 1 do
-        sleep(1)
-        puts s.robustly { s.tick! }.inspect
-      end
-    end
-
-    processes.times do
-      fork do
-        monitor = Performant.monitor("stress")
-        while Time.now < quit do
-          monitor.track() { sleep(rand) } # working time
-          sleep(rand)                     # unproductive time
-        end
-      end
-    end
-
+    fork { monitor }
+    simulate( tds )
     Process.waitall
+  end
+
+  def simulate( tds )
+    start = Time.now
+
+    tds.each do |td|
+      t  = start + td.first / factor
+      d  = td.last / factor
+      if Time.now < t then
+        puts "#{Time.now.to_i} Waiting until #{t} for next job #{td.first}"
+        sleep(1.0/factor) while Time.now < t
+      end
+      fork { simulate1( d ) }
+    end
+  end
+
+  def simulate1( duration )
+    monitor = Performant.monitor("stress")
+    monitor.track do
+      puts "#{Time.now.to_i} Running job with duration #{duration}"
+      sleep(duration)
+    end
+  end
+
+  def monitor
+    s = Performant.storage("stress")
+    s.nuke!
+    while true do
+      sleep(1)
+      puts s.robustly { s.tick! }.inspect
+    end
   end
 
 end
