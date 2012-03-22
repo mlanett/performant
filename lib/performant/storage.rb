@@ -25,9 +25,10 @@ class Storage
         r.zcard( jobs_key )
         r.get( busy_key )
         r.get( work_key )
+        r.get( start_key )
       end
 
-      return { jobs: result[0], busy: (result[1].to_i / 1000.0), work: (result[2].to_i / 1000.0) }
+      return { jobs: result[0], busy: (result[1].to_i / 1000.0), work: (result[2].to_i / 1000.0), starts: result[3].to_i }
     end
 
     # Updates the busy and work values
@@ -102,20 +103,22 @@ class Storage
           # Increment time consumed by current jobs.
           # Add this job.
 
-          multi( "start more #{id}", 4 ) do |r|
+          multi( "start more #{id}", 5 ) do |r|
             r.incrby( busy_key, diff_ms )
             r.incrby( work_key, diff_ms * operations )
             r.set( last_key, time_ms )
             r.zadd( jobs_key, expire_ms, id )
+            r.incrby( start_key, 1 )
           end
 
         else
           # No jobs are running.
           # Add this job.
 
-          multi( "start #{id}", 2 ) do |r|
+          multi( "start #{id}", 3 ) do |r|
             r.set( last_key, time_ms )
             r.zadd( jobs_key, expire_ms, id )
+            r.incrby( start_key, 1 )
           end
 
         end
@@ -240,6 +243,10 @@ class Storage
 
     def last_key
       @last_key ||= "#{@prefix}:last"
+    end
+
+    def start_key
+      @start_key ||= "#{@prefix}:starts"
     end
 
     def all_keys
