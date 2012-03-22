@@ -1,0 +1,123 @@
+#!/usr/bin/env ruby
+# -*- encoding: utf-8 -*-
+
+require "bundler/setup"
+
+require "performant"
+require "performant/utilities/bells"
+require "performant/utilities/histogram"
+require "thor"
+
+class Simulator < Thor
+
+  desc "generate FILE", "generate a simulation list"
+
+  method_option :processes, alias: "-p", type: :numeric, default: 100_000, desc: "Processes per cycle"
+  method_option :days,      alias: "-d", type: :numeric, default: 2
+  method_option :duration,  alias: "-t", type: :numeric, default: 30,      desc: "Duration of a single process"
+  method_option :day,       alias: "-D", type: :numeric, default: 86_400,  desc: "Length of a single day"
+   
+  def generate(file)
+    # distribute p processes over each of d days.
+    # the activity level for a day peaks in the middle
+    
+    events = []
+
+    (0...options.days).each do |day|
+      options.processes.times do
+        t = ( rand + day ) * options.day
+        d = options.duration * rand # TODO use long tail distribution
+        events << [ t.to_i, d.to_i ]
+      end
+    end
+
+    events = events.sort_by { |i| i.first }
+    fout(file) do |io|
+      events.each { |i| io.printf "%i,%i\n", i.first, i.last }
+    end
+  end
+
+  desc "analyze FILE", "analyze a simulation list for distribution"
+  method_option :bins, alias: "-b", type: :numeric, default: 24, desc: "Bins for histogram"
+
+  def analyze(file)
+    lines = fin(file) { |io| io.readlines }
+    tds = lines.map { |line| line.split(",").map { |s| s.to_i } }
+
+    h = Performant::Utilities::Histogram.new buckets: options.bins
+    b = h.process(tds.map(&:first))
+    b.each_with_index { |n,i| printf "%i\t%i\n", i, n }
+  end
+
+  desc "simulate FILE", "run a simulation"
+  method_option :factor, alias: "-f", type: :numeric, default: 60, desc: "Simulation speed-up factor"
+
+  def simulate(file)
+    Performant::Configuration.load! src: File.expand_path( "../example.yml", __FILE__ ), env: "test"
+    events = []
+    factor = options.factor.to_f
+
+    lines = fin(file) { |io| io.readlines }
+    tds = lines.map { |line| line.split(",").map { |s| s.to_i } }
+    tds.each_with_index do |td,i|
+      t,d = *td
+      d = 1 if d < 1 # 0-length jobs may sort backwards and generate a simulator failure
+      events << [ t / factor, :start, i, t ]
+      events << [ ( t + d ) / factor, :finish, i, t + d ]
+    end
+    events = events.sort_by { |e| e.first }
+
+    start   = Time.now
+    live    = {}
+    monitor = Performant.monitor("stress")
+    events.each do |event|
+      t,a,i,r = *event
+      wait_until start + t
+      if a == :start
+        id = live[i] = monitor.start
+        puts "#{r} Started  #{'*' * live.size}"
+      else
+        begin
+          id = live.delete(i)
+          monitor.finish( id )
+          puts "#{r} Finished #{'*' * live.size}"
+        rescue Performant::Storage::NoSuchJob => x
+          puts "FAILED #{i} #{x.inspect}"
+          raise
+        end
+      end
+    end
+  end
+
+  private
+
+  def fout( f, &block )
+    if f == "-" then
+      block.call(STDOUT)
+    else
+      File.open(f,"w") { |io| block.call(io) }
+    end
+  end
+
+  def fin( f, &block )
+    if f == "-" then
+      block.call(STDIN)
+    else
+      File.open(f) { |io| block.call(io) }
+    end
+  end
+
+  def wait_until( t )
+    while (d = t - Time.now ) > 0 do
+      sleep( d/2 )
+    end
+  end
+
+  def rand
+    @rand ||= Performant::Utilities::Bells.new
+    @rand.rand
+  end
+
+end # Generator
+
+Simulator.start if __FILE__ == $0

@@ -4,7 +4,7 @@
 require "bundler/setup"
 
 require "performant"
-require "performant/utilities/task"
+require "thor"
 
 # 10 processes
 # 10 seconds
@@ -60,4 +60,4 @@ class Stress < Performant::Utilities::Task
 
 end
 
-Stress.parse(ARGV).run
+Stress.start

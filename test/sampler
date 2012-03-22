@@ -4,18 +4,18 @@
 require "bundler/setup"
 
 require "performant"
-require "performant/utilities/task"
+require "thor"
 
-class Sampler < Performant::Utilities::Task
+class Sampler < Thor
 
-  option "e", "environment",  default: "development"
-  option "c", "config",       default: File.expand_path( "../example.yml", __FILE__ )
-  option "j", "jobs"
+  desc "run", "run the sampler"
+
+  method_options :environment,  alias: "-e", default: "development"
+  method_options :config,       alias: "-c", default: File.expand_path( "../example.yml", __FILE__ )
+  method_options :jobs,         alias: "-j", type: :array, default: [ "stress", "fake" ]
 
   def run
-    Performant::Configuration.load! src: config, env: environment
-
-    self.jobs ||= [ "stress", "fake" ]
+    Performant::Configuration.load! src: options.config, env: options.environment
 
     sampler     = Performant.sampler
     sec_samples = Hash.new { { jobs: 0, busy: 0, work: 0 } }
@@ -23,7 +23,7 @@ class Sampler < Performant::Utilities::Task
     sampler.loop_until_false do
 
       puts Time.now
-      jobs.each do |job|
+      options.jobs.each do |job|
 
         storage     = Performant.storage(job)
         last_sample = sec_samples[job]
@@ -38,4 +38,4 @@ class Sampler < Performant::Utilities::Task
   end
 end
 
-Sampler.parse(ARGV).run if __FILE__ == $0
+Sampler.start if __FILE__ == $0
