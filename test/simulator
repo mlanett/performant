@@ -41,11 +41,10 @@ class Simulator < Thor
   method_option :bins, alias: "-b", type: :numeric, default: 24, desc: "Bins for histogram"
 
   def analyze(file)
-    lines = fin(file) { |io| io.readlines }
-    tds = lines.map { |line| line.split(",").map { |s| s.to_i } }
+    ts = read_tds( file ).map( &:first )
 
     h = Performant::Utilities::Histogram.new buckets: options.bins
-    b = h.process(tds.map(&:first))
+    b = h.process(ts)
     b.each_with_index { |n,i| printf "%i\t%i\n", i, n }
   end
 
@@ -56,14 +55,13 @@ class Simulator < Thor
     Performant::Configuration.load! src: File.expand_path( "../example.yml", __FILE__ ), env: "test"
     events = []
     factor = options.factor.to_f
+    tds    = read_tds( file )
 
-    lines = fin(file) { |io| io.readlines }
-    tds = lines.map { |line| line.split(",").map { |s| s.to_i } }
     tds.each_with_index do |td,i|
       t,d = *td
       d = 1 if d < 1 # 0-length jobs may sort backwards and generate a simulator failure
-      events << [ t / factor, :start, i, t ]
-      events << [ ( t + d ) / factor, :finish, i, t + d ]
+      events << [ t, :start, i ]
+      events << [ t + d, :finish, i ]
     end
     events = events.sort_by { |e| e.first }
 
@@ -71,16 +69,16 @@ class Simulator < Thor
     live    = {}
     monitor = Performant.monitor("stress")
     events.each do |event|
-      t,a,i,r = *event
-      wait_until start + t
+      t,a,i = *event
+      # wait_until start + t
       if a == :start
         id = live[i] = monitor.start
-        puts "#{r} Started  #{'*' * live.size}"
+        puts "#{id} Started  #{'*' * live.size}"
       else
         begin
           id = live.delete(i)
           monitor.finish( id )
-          puts "#{r} Finished #{'*' * live.size}"
+          puts "#{id} Finished #{'*' * live.size}"
         rescue Performant::Storage::NoSuchJob => x
           puts "FAILED #{i} #{x.inspect}"
           raise
@@ -89,10 +87,41 @@ class Simulator < Thor
     end
   end
 
+  desc "simulatep FILE", "run a simulation in parallel"
+  method_option :factor, alias: "-f", type: :numeric, default: 60, desc: "Simulation speed-up factor"
+
+  def simulatep( file )
+    Performant::Configuration.load! src: File.expand_path( "../example.yml", __FILE__ ), env: "test"
+    factor = options.factor.to_f
+    start  = Time.now
+    tds    = read_tds( file, factor )
+
+    tds.each do |td|
+      t = start + td.first
+      d = td.last
+      wait_until t
+      fork { simple1( d ) }
+    end
+  end
+
   private
 
+  def simulate1( duration )
+    monitor = Performant.monitor("stress")
+    monitor.track do
+      puts "#{Time.now.to_i} Running job with duration #{duration}"
+      sleep(duration)
+    end
+  end
+
+  def read_tds( file, factor = 1 )
+    lines = fin(file) { |io| io.readlines }
+    tds = lines.map { |line| line.split(",").map { |s| s.to_i } }
+    tds.map { |td| [ td.first / factor, td.last / factor ] }
+  end
+
   def fout( f, &block )
-    if f == "-" then
+    if f == "stdout" then
       block.call(STDOUT)
     else
       File.open(f,"w") { |io| block.call(io) }
@@ -100,7 +129,7 @@ class Simulator < Thor
   end
 
   def fin( f, &block )
-    if f == "-" then
+    if f == "stdin" then
       block.call(STDIN)
     else
       File.open(f) { |io| block.call(io) }
