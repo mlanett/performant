@@ -16,4 +16,6 @@ Gem::Specification.new do |gem|
   gem.version       = Performant::VERSION
 
   gem.add_dependency "redis"
+
+  gem.add_development_dependency "rspec-redis_helper"
 end
