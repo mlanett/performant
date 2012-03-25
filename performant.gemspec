@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-require File.expand_path('../lib/performant/version', __FILE__)
+require File.expand_path("../lib/performant/version", __FILE__)
 
 Gem::Specification.new do |gem|
   gem.authors       = ["Mark Lanett"]
@@ -16,4 +16,6 @@ Gem::Specification.new do |gem|
   gem.version       = Performant::VERSION
 
   gem.add_dependency "redis"
+
+  gem.add_development_dependency "rspec-redis_helper"
 end

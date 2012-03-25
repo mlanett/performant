@@ -3,14 +3,13 @@ require "bundler/setup"         # set up gem paths
 #equire "ruby-debug"
 require "simplecov"             # code coverage
 SimpleCov.start                 # must be loaded before our own code
+require "rspec-redis_helper"    # for the redis support
 require "performant"            # load this gem
-require "performant/test/redis_helper"
 
 RSpec.configure do |spec|
-  spec.include Performant::Test::RedisHelper, redis: true
+  spec.include RSpec::RedisHelper, redis: true
 
   # nuke the Redis database around each run
-  # @see https://www.relishapp.com/rspec/rspec-core/docs/hooks/around-hooks
   spec.around( :each, redis: true ) do |example|
     with_clean_redis do
       example.run
@@ -18,7 +17,7 @@ RSpec.configure do |spec|
   end
 
   spec.around( :each, redis_configuration: true ) do |example|
-    Performant::Configuration.set! redis: Performant::Test::RedisHelper::TEST_REDIS
+    Performant::Configuration.set! redis: RSpec::RedisHelper::TEST
     example.call
   end
 
