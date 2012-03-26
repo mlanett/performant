@@ -189,6 +189,22 @@ class Storage
       end
     end # robustly
 
+    def get_sample
+      it = redis.hgetall( "#{@prefix}:sample" )
+      return {
+        jobs: it["jobs"].to_f || 0,
+        busy: it["busy"].to_f || 0,
+        work: it["work"].to_f || 0,
+        starts: it["starts"].to_f || 0
+      }
+    end
+
+    def save_sample( sample )
+      sample = { jobs: 0.0, busy: 0.0, work: 0.0, starts: 0.0 }.merge( sample )
+      redis.mapped_hmset( "#{@prefix}:sample", sample )
+      self
+    end
+
     protected
 
     # We calculate the difference between two times
