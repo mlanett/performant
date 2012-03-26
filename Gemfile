@@ -15,5 +15,5 @@ end
 group :test do
   #em "ruby-debug19",   require: false
   gem "simplecov",      require: false
-# gem "plymouth"        # invoke pry after rspec failures
+  #em "plymouth"        # invoke pry after rspec failures
 end
