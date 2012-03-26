@@ -55,7 +55,7 @@ class Simulator < Thor
     Performant::Configuration.load! src: File.expand_path( "../example.yml", __FILE__ ), env: "test"
     events = []
     factor = options.factor.to_f
-    tds    = read_tds( file )
+    tds    = read_tds( file, factor )
 
     tds.each_with_index do |td,i|
       t,d = *td
@@ -70,7 +70,7 @@ class Simulator < Thor
     monitor = Performant.monitor("stress")
     events.each do |event|
       t,a,i = *event
-      # wait_until start + t
+      wait_until start + t
       if a == :start
         id = live[i] = monitor.start
         puts "#{id} Started  #{'*' * live.size}"
@@ -137,6 +137,9 @@ class Simulator < Thor
   end
 
   def wait_until( t )
+    if t - Time.now > 10 then
+      puts "Waiting until #{t} (#{t - Time.now})"
+    end
     while (d = t - Time.now ) > 0 do
       sleep( d/2 )
     end
