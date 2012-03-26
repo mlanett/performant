@@ -16,8 +16,8 @@ module Performant
     end
 
     # @returns a Sampler initialized from the default Configuration
-    def sampler
-      Configuration.default.sampler
+    def sampler( jobs )
+      Configuration.default.sampler( jobs )
     end
 
     # @returns a Storage initialized from the default Configuration

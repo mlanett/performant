@@ -56,8 +56,8 @@ class Configuration
     configured Monitor.new
   end
 
-  def sampler
-    configured Sampler.new
+  def sampler( jobs )
+    configured Sampler.new( jobs )
   end
 
   def storage
