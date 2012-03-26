@@ -45,27 +45,29 @@ class Storage
           # Increment time consumed by current jobs.
           # And fetch the cumulative work values.
 
-          multi( "busy tick", 5 ) do |r|
+          multi( "busy tick", 6 ) do |r|
             r.incrby( busy_key, diff_ms )
             r.incrby( work_key, diff_ms * operations )
             r.set( last_key, time_ms )
             r.get( busy_key )
             r.get( work_key )
-          end.slice(3,2)
+            r.get( start_key )
+          end.slice(3,3)
 
         else
 
           # Nothing is running, just update the timestamp.
           # And fetch the cumulative work values.
-          multi( "quiet tick", 3 ) do |r|
+          multi( "quiet tick", 4 ) do |r|
             r.set( last_key, time_ms )
             r.get( busy_key )
             r.get( work_key )
-          end.slice(1,2)
+            r.get( start_key )
+          end.slice(1,3)
 
         end # result
 
-        return { jobs: operations, busy: (result[0].to_i / 1000.0), work: (result[1].to_i / 1000.0) }
+        return { jobs: operations, busy: (result[0].to_i / 1000.0), work: (result[1].to_i / 1000.0), starts: result[2].to_i }
       end # watch
     end # tick!
 
