@@ -56,7 +56,6 @@ Special cases we have to support:
 
 Performant records high-volume data in Redis:
 
-- Performant:Jobs              < Set < Job > >
 - Performant:{Job}:Running     < SortedSet < Job ID scored by Expire time > >
 - Performant:{Job}:Starts      < int >
 - Performant:{Job}:Busy Time   < int(ms) >
@@ -64,6 +63,11 @@ Performant records high-volume data in Redis:
 - Performant:{Job}:Last Tick   < int(ms) >
 
 Timestamps and durations are stored as integers in milliseconds.
+
+The sampler captures the smallest interval delta and stores that in Redis as well:
+
+- Performant:Jobs              < Set < Job > >
+- Performant:{Job}:Status      < Map >
 
 The sampler captures the rollup values and writes them to Mongo:
 
