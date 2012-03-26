@@ -199,8 +199,7 @@ class Storage
     # => adjust the duration to be 0.
     # => return the last time as the new "now" time.
     # This has the effect of moving the out-of-order timepoint ahead slightly, which is generally Ok.
-    # @returns 0 if the duration is small
-    # @raises OutOfOrder.new(diff_ms.to_s) if diff_ms < 0
+    # @raises OutOfOrder if adjustment is too large (negative)
     def reorder( now, last, limit = -1000 )
       diff = now - last
       return [ now, diff ] if diff >= 0
