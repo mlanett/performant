@@ -8,33 +8,15 @@ require "thor"
 
 class Sampler < Thor
 
-  desc "run", "run the sampler"
+  desc "sample", "run the sampler"
 
   method_options :environment,  alias: "-e", default: "development"
   method_options :config,       alias: "-c", default: File.expand_path( "../example.yml", __FILE__ )
   method_options :jobs,         alias: "-j", type: :array, default: [ "stress", "fake" ]
 
-  def run
+  def sample
     Performant::Configuration.load! src: options.config, env: options.environment
-
-    sampler     = Performant.sampler
-    sec_samples = Hash.new { { jobs: 0, busy: 0, work: 0 } }
-
-    sampler.loop_until_false do
-
-      puts Time.now
-      options.jobs.each do |job|
-
-        storage     = Performant.storage(job)
-        last_sample = sec_samples[job]
-        now_sample  = storage.robustly { storage.tick! }
-        diff        = sampler.diff( now_sample, last_sample )
-        puts diff.merge( job: job ).inspect
-
-        sec_samples[job] = now_sample
-      end
-      true
-    end
+    Performant.sampler(jobs).run
   end
 end
 
