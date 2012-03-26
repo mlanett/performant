@@ -101,9 +101,9 @@ describe Performant::Storage, redis: true, redis_configuration: true do
   end
 
   it "can get and save a sample" do
-    subject.get_sample.should eq( { jobs: 0.0, busy: 0.0, work: 0.0, starts: 0.0 } )
+    subject.get_sample.should eq( { jobs: 0, busy: 0.0, work: 0.0, starts: 0 } )
     subject.save_sample jobs: 1, busy: 2, work: 3, starts: 4
-    subject.get_sample.should eq( { jobs: 1.0, busy: 2.0, work: 3.0, starts: 4.0 } )
+    subject.get_sample.should eq( { jobs: 1, busy: 2.0, work: 3.0, starts: 4 } )
   end
 
 end
