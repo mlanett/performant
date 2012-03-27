@@ -17,7 +17,7 @@ class Sampler
     loop_until_false do
       puts Time.now
       jobs.each do |job|
-        x = sample(job)
+        x = sample!(job)
         puts x.inspect
       end
       true
