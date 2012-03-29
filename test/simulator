@@ -12,10 +12,10 @@ class Simulator < Thor
 
   desc "generate FILE", "generate a simulation list"
 
-  method_option :processes, alias: "-p", type: :numeric, default: 100_000, desc: "Processes per cycle"
-  method_option :days,      alias: "-d", type: :numeric, default: 2
-  method_option :duration,  alias: "-t", type: :numeric, default: 30,      desc: "Duration of a single process"
-  method_option :day,       alias: "-D", type: :numeric, default: 86_400,  desc: "Length of a single day"
+  method_option :processes, aliases: "-p", type: :numeric, default: 100_000, desc: "Processes per cycle"
+  method_option :days,      aliases: "-d", type: :numeric, default: 2
+  method_option :duration,  aliases: "-t", type: :numeric, default: 30,      desc: "Duration of a single process"
+  method_option :day,       aliases: "-D", type: :numeric, default: 86_400,  desc: "Length of a single day"
    
   def generate(file)
     # distribute p processes over each of d days.
@@ -38,7 +38,7 @@ class Simulator < Thor
   end
 
   desc "analyze FILE", "analyze a simulation list for distribution"
-  method_option :bins, alias: "-b", type: :numeric, default: 24, desc: "Bins for histogram"
+  method_option :bins, aliases: "-b", type: :numeric, default: 24, desc: "Bins for histogram"
 
   def analyze(file)
     ts = read_tds( file ).map( &:first )
@@ -49,7 +49,7 @@ class Simulator < Thor
   end
 
   desc "simulate FILE", "run a simulation"
-  method_option :factor, alias: "-f", type: :numeric, default: 60, desc: "Simulation speed-up factor"
+  method_option :factor, aliases: "-f", type: :numeric, default: 60, desc: "Simulation speed-up factor"
 
   def simulate(file)
     Performant::Configuration.load! src: File.expand_path( "../example.yml", __FILE__ ), env: "test"
@@ -88,7 +88,7 @@ class Simulator < Thor
   end
 
   desc "simulatep FILE", "run a simulation in parallel"
-  method_option :factor, alias: "-f", type: :numeric, default: 60, desc: "Simulation speed-up factor"
+  method_option :factor, aliases: "-f", type: :numeric, default: 60, desc: "Simulation speed-up factor"
 
   def simulatep( file )
     Performant::Configuration.load! src: File.expand_path( "../example.yml", __FILE__ ), env: "test"

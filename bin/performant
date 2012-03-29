@@ -10,9 +10,9 @@ module Performant
 
     desc "sample", "run the sampler"
 
-    method_option :environment,  alias: "-e", default: "development"
-    method_option :config,       alias: "-c", default: File.expand_path( "../example.yml", __FILE__ )
-    method_option :jobs,         alias: "-j", type: :array, default: [ "stress", "fake" ]
+    method_option :environment,  aliases: "-e", default: "development"
+    method_option :config,       aliases: "-c", default: File.expand_path( "../example.yml", __FILE__ )
+    method_option :jobs,         aliases: "-j", type: :array, default: [ "stress", "fake" ]
 
     def sample
       Performant::Configuration.load! src: options.config, env: options.environment
