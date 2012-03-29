@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+# -*- encoding: utf-8 -*-
+require "rubygems"
+
+require "performant"
+require "thor"
+
+module Performant
+  class CLI < Thor
+
+    desc "sample", "run the sampler"
+
+    method_option :environment,  alias: "-e", default: "development"
+    method_option :config,       alias: "-c", default: File.expand_path( "../example.yml", __FILE__ )
+    method_option :jobs,         alias: "-j", type: :array, default: [ "stress", "fake" ]
+
+    def sample
+      Performant::Configuration.load! src: options.config, env: options.environment
+      Performant.sampler(options.jobs).run
+    end
+  end
+end
+
+Performant::CLI.start if __FILE__ == $0
