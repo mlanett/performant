@@ -10,34 +10,34 @@ describe Performant::Storage, redis: true, redis_configuration: true do
     it "should sample the counters" do
       subject.sample.should eq( { jobs: 0, busy: 0.0, work: 0.0, starts: 0 } )
 
-      now = Time.at( 1000000000 )
+      now = Time.at( 2000000000 )
       subject.record_start( "a", time: now )
       subject.sample.should eq( { jobs: 1, busy: 0.0, work: 0.0, starts: 1 } )
     end
 
     it "should record start events" do
-      now = Time.at( 1000000000 )
+      now = Time.at( 2000000000 )
       subject.record_start( "a", time: now )
       subject.sample[:jobs].should eq( 1 )
       subject.sample[:starts].should eq( 1 )
     end
 
     it "should handle repeated start events" do
-      now = Time.at( 1000000000 )
+      now = Time.at( 2000000000 )
       subject.record_start( "a", time: now )
       subject.record_start( "a", time: now+1 )
       subject.sample[:jobs].should eq( 1 )
     end
 
     it "should record one operation" do
-      now = Time.at( 1000000000 )
+      now = Time.at( 2000000000 )
       subject.record_start( "a", time: now )
       subject.record_finish( "a", time: now+1 )
       subject.sample.should eq( { jobs: 0, busy: 1.0, work: 1.0, starts: 1 } )
     end
 
     it "should record sequential operations" do
-      now = Time.at( 1000000000 )
+      now = Time.at( 2000000000 )
       subject.record_start( "a", time: now )
       subject.record_finish( "a", time: now+1 )
       subject.record_start( "b", time: now+2 )
@@ -46,7 +46,7 @@ describe Performant::Storage, redis: true, redis_configuration: true do
     end
 
     it "should record multiple overlapping operations" do
-      now = Time.at( 1000000000 )
+      now = Time.at( 2000000000 )
       subject.record_start( "a", time: now )
       subject.record_start( "b", time: now+1 )
       subject.record_start( "c", time: now+2 )
@@ -57,7 +57,7 @@ describe Performant::Storage, redis: true, redis_configuration: true do
     end
 
     it "prohibits recording endpoints out of order" do
-      now = Time.at( 1000000000 )
+      now = Time.at( 2000000000 )
       subject.record_start( "a", time: now )
       expect { subject.record_start( "b", time: now-0.1 ) }.to_not raise_exception
       expect { subject.record_start( "c", time: now-1.1 ) }.to raise_exception
@@ -70,7 +70,7 @@ describe Performant::Storage, redis: true, redis_configuration: true do
   end # when monitoring
 
   it "can sample and update" do
-    now = Time.at( 1000000000 )
+    now = Time.at( 2000000000 )
 
     subject.record_start( "a", time: now )
     subject.tick!( now+1 ).should include( { jobs: 1, busy: 1.0, work: 1.0 } )
@@ -80,7 +80,7 @@ describe Performant::Storage, redis: true, redis_configuration: true do
   end
 
   it "can show expired jobs" do
-    now = Time.at 1000000000
+    now = Time.at 2000000000
     subject.record_start  "a", time: now, timeout: 10
     subject.record_start  "b", time: now, timeout: 20
     subject.record_start  "c", time: now, timeout: 20
@@ -90,7 +90,7 @@ describe Performant::Storage, redis: true, redis_configuration: true do
   end
 
   it "can expire jobs" do
-    now = Time.at 1000000000
+    now = Time.at 2000000000
     subject.record_start  "a", time: now, timeout: 10
     subject.record_start  "b", time: now, timeout: 50
 
