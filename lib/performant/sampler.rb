@@ -13,14 +13,18 @@ class Sampler
     @stores = jobs.inject({}) { |a,job| a[job] = Performant.storage(job); a }
   end
 
-  def run
+  def run( limit = nil, &block )
     loop_until_false do
-      puts Time.now
+      puts Time.now if ! block
       jobs.each do |job|
         x = sample!(job)
-        puts x.inspect
+        if block then
+          block.call(x)
+        else
+          puts x.inspect
+        end
       end
-      true
+      limit ? ( limit -= 1 ) > 0 : true
     end
   end
 
