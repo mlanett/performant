@@ -15,13 +15,13 @@ class Sampler
 
   def run( limit = nil, &block )
     loop_until_false do
-      puts Time.now if ! block
-      jobs.each do |job|
-        x = sample!(job)
+      now = Time.now
+      samples = jobs.map { |job| sample!(job) }.reject { |sample| inactive?(sample) }.map { |sample| sample.merge time: now }
+      if samples.size > 0 then
         if block then
-          block.call(x)
+          samples.each { |sample| block.call(sample) }
         else
-          puts x.inspect
+          samples.each { |sample| puts sample.inspect }
         end
       end
       limit ? ( limit -= 1 ) > 0 : true
@@ -38,6 +38,10 @@ class Sampler
   end
 
   private
+
+  def inactive?( sample )
+    sample[:jobs] == 0 && sample[:busy] == 0 && sample[:work] == 0  && sample[:starts] == 0
+  end
 
   def loop_until_false( &block )
     next_time = next_sample
