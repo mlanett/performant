@@ -281,7 +281,7 @@ class Storage
     end
 
     def all_keys
-      [ jobs_key, busy_key, work_key, last_key ]
+      [ jobs_key, busy_key, work_key, last_key, start_key ]
     end
 
   end # Client
