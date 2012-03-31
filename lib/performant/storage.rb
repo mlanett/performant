@@ -19,6 +19,10 @@ class Storage
       @prefix = "performant:#{job}"
     end
 
+    # --------------------------------------------------------------------------
+    # sample
+    # --------------------------------------------------------------------------
+
     def sample
       # this isn't a transaction, just a bulk read operation
       result = redis.multi do |r|
@@ -70,6 +74,26 @@ class Storage
         return { jobs: operations, busy: (result[0].to_i / 1000.0), work: (result[1].to_i / 1000.0), starts: result[2].to_i }
       end # watch
     end # tick!
+
+    def get_sample
+      it = redis.hgetall( "#{@prefix}:sample" )
+      return {
+        jobs: it["jobs"].to_i || 0,
+        busy: it["busy"].to_f || 0,
+        work: it["work"].to_f || 0,
+        starts: it["starts"].to_i || 0
+      }
+    end
+
+    def save_sample( sample )
+      sample = { jobs: 0, busy: 0.0, work: 0.0, starts: 0 }.merge( sample )
+      redis.mapped_hmset( "#{@prefix}:sample", sample )
+      self
+    end
+
+    # --------------------------------------------------------------------------
+    # start/stop
+    # --------------------------------------------------------------------------
 
     # This is a transactional operation - it may fail if it co-executes with another transaction.
     # If the given job is already running, the timeout is extended.
@@ -152,6 +176,10 @@ class Storage
       self
     end # record_finish
 
+    # --------------------------------------------------------------------------
+    # expiration
+    # --------------------------------------------------------------------------
+
     def nuke!
       redis.del *all_keys
     end
@@ -191,23 +219,9 @@ class Storage
       end
     end # robustly
 
-    def get_sample
-      it = redis.hgetall( "#{@prefix}:sample" )
-      return {
-        jobs: it["jobs"].to_i || 0,
-        busy: it["busy"].to_f || 0,
-        work: it["work"].to_f || 0,
-        starts: it["starts"].to_i || 0
-      }
-    end
-
-    def save_sample( sample )
-      sample = { jobs: 0, busy: 0.0, work: 0.0, starts: 0 }.merge( sample )
-      redis.mapped_hmset( "#{@prefix}:sample", sample )
-      self
-    end
-
+    # --------------------------------------------------------------------------
     protected
+    # --------------------------------------------------------------------------
 
     # We calculate the difference between two times
     # @param now is assumed to be approximately Time.now
