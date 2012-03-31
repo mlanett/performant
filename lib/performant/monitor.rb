@@ -16,7 +16,7 @@ class Monitor
 
     def initialize( storage, job )
       @storage = storage
-      @job    = job
+      @job     = job
     end
 
     def track( &block )
