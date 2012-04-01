@@ -129,10 +129,10 @@ class Configuration
   end
 
   # merges hashes recursively
-  def self.rmerge( hold, hadd )
+  def self.rmerge( defaults, additional )
     m = {}
-    hold.merge( hadd )  do | key, old_val, add_val |
-      m[key] = ( Hash === old_val && Hash === add_val ) ? rmerge( old_val, add_val ) : add_val
+    defaults.merge( additional )  do | key, default_val, additional_val |
+      m[key] = ( Hash === default_val && Hash === additional_val ) ? rmerge( default_val, additional_val ) : additional_val
     end
   end
 
