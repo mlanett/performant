@@ -84,6 +84,12 @@ describe Performant::Configuration do
       expect { y[:a][0][:b] = nil }.to raise_exception
       expect { y[:e] = 1 }.to raise_exception
     end
-  end
+    it "can symbolize deeply" do
+      x = { "a" => [ { "b" => "b" }, "c" ], "d" => "d" }
+      y = Performant::Configuration.deep_symbolize(x)
+      puts y.inspect
+      y[:a][0][:b].should_not be_nil
+    end
+  end # utilities
 
 end

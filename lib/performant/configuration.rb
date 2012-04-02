@@ -163,5 +163,20 @@ class Configuration
     end
   end
 
+  def self.deep_symbolize( h )
+    case h
+    when Hash
+      s = {}
+      h.each do |k,v|
+        s[k.to_s.to_sym] = deep_symbolize(v)
+      end
+      s
+    when Array
+      h.map { |i| deep_symbolize(i) }
+    else
+      h
+    end
+  end
+
 end # Configuration
 end # Performant
