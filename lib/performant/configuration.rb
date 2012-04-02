@@ -26,8 +26,8 @@ class Configuration
     @environment      = @options[:environment]
     @interval_size    = @options[:interval_size]
     @redis_options    = @options[:redis]
-    @mongos           = @options[:mongo]
-    @rollup_intervals = valid_rollup_intervals( @options[:rollups] )
+    #mongos           = @options[:mongo]
+    #rollup_intervals = valid_rollup_intervals( @options[:rollups] )
   end
 
   # @returns a range containing the start and finish endpoints; this is a non-inclusive interval
@@ -56,10 +56,6 @@ class Configuration
 
   def redis
     redis_options ? Redis.connect( redis_options ) : Redis.connect
-  end
-
-  def mongos
-    @mongos
   end
 
   # ----------------------------------------------------------------------------
