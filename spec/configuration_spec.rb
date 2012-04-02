@@ -74,5 +74,16 @@ describe Performant::Configuration do
 
   end # buckets
 
+  describe "utilities" do
+    it "can do a deep freeze" do
+      x = { a: [ { b: "b" }, "c" ], d: "d" }
+      y = Performant::Configuration.deep_freeze(x)
+      x.should eq(y)
+      expect { y[:a] = nil }.to raise_exception
+      expect { y[:a][0] = nil }.to raise_exception
+      expect { y[:a][0][:b] = nil }.to raise_exception
+      expect { y[:e] = 1 }.to raise_exception
+    end
+  end
 
 end

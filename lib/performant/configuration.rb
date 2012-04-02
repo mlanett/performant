@@ -128,6 +128,19 @@ class Configuration
     return thing
   end
 
+  def self.deep_freeze( it )
+    case it
+    when nil
+      nil
+    when Hash
+      Hash[ it.map { |kv| [ kv[0].freeze, deep_freeze(kv[1]) ] } ].freeze
+    when Array
+      it.map { |i| deep_freeze(i) }.freeze
+    when Object
+      it.freeze
+    end
+  end
+
   # merges hashes recursively
   def self.deep_merge( defaults, additional )
     m = {}
