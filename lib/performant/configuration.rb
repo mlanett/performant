@@ -84,7 +84,7 @@ class Configuration
     src = options[:src] || "#{ENV['RACK_ROOT']}/config/performant.yml"
     env = options[:env] || ENV["RACK_ENV"]
     yml = YAML.load( ERB.new( IO.read( src ) ).result )
-    uni = rmerge( ( yml["default"] || {} ), ( yml[env] || {} ) )
+    uni = deep_merge( ( yml["default"] || {} ), ( yml[env] || {} ) )
     Configuration.new( uni )
   end
 
@@ -129,10 +129,10 @@ class Configuration
   end
 
   # merges hashes recursively
-  def self.rmerge( defaults, additional )
+  def self.deep_merge( defaults, additional )
     m = {}
     defaults.merge( additional )  do | key, default_val, additional_val |
-      m[key] = ( Hash === default_val && Hash === additional_val ) ? rmerge( default_val, additional_val ) : additional_val
+      m[key] = ( Hash === default_val && Hash === additional_val ) ? deep_merge( default_val, additional_val ) : additional_val
     end
   end
 
