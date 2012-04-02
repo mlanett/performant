@@ -6,14 +6,28 @@ require "yaml"
 module Performant
 class Configuration
 
+  DEFAULT_CONFIG = {
+    environment: "development",
+    interval_size: 60,
+    redis: { url: "redis://127.0.0.1:6379/0" },
+    mongo: { hosts: [ "localhost:27017" ], database: "test", safe: false },
+    rollups: [ "hour", "day", "month" ]
+  }
+
+  NAMED_ROLLUPS   = { "minute" => 60, "hour" => 3_600, "day" => 86_400, "week" => 604_800, "month" => 2_592_000 }
+
+  attr :options
+  attr :environment
   attr :interval_size
   attr :redis_options, true
 
   def initialize( options = {} )
-    options  = Hash[ options.map { |k,v| [ k.to_sym, v ] } ].freeze # poor man's symbolize keys
-    @interval_size = options[:interval_size] || 60
-    @redis_options = options[:redis] || { url: "redis://127.0.0.1:6379/0" }
-    @mongos        = options[:mongo]
+    @options          = self.class.deep_freeze( self.class.deep_merge( DEFAULT_CONFIG, self.class.deep_symbolize( options ) ) )
+    @environment      = @options[:environment]
+    @interval_size    = @options[:interval_size]
+    @redis_options    = @options[:redis]
+    @mongos           = @options[:mongo]
+    @rollup_intervals = valid_rollup_intervals( @options[:rollups] )
   end
 
   # @returns a range containing the start and finish endpoints; this is a non-inclusive interval
@@ -82,9 +96,9 @@ class Configuration
   # @returns a Configuration
   def self.load( options = {} )
     src = options[:src] || "#{ENV['RACK_ROOT']}/config/performant.yml"
-    env = options[:env] || ENV["RACK_ENV"]
+    env = options[:env] || ENV["RACK_ENV"] || "development"
     yml = YAML.load( ERB.new( IO.read( src ) ).result )
-    uni = deep_merge( ( yml["default"] || {} ), ( yml[env] || {} ) )
+    uni = { environment: env }.merge( deep_merge( ( yml["default"] || {} ), ( yml[env] || {} ) ) )
     Configuration.new( uni )
   end
 
